@@ -24,6 +24,11 @@
 (defvar multihost-worker--captures nil)
 (defvar multihost-worker--allow-local-execution nil
   "Internal test binding; production entry points require a remote directory.")
+(defvar multihost-worker-operation-functions
+  '((execute . multihost-worker--execute-operation)
+    (warmup . multihost-worker--warmup-operation)
+    (compgen . multihost-worker--compgen-operation))
+  "Alist of worker operations and handlers accepting (PAYLOAD DIRECTORY).")
 
 (defun multihost-worker--encode-value (value &optional depth)
   "Encode inert Lisp VALUE as JSON-compatible data, preserving its type."
@@ -232,6 +237,118 @@ not insert results, evaluate header Lisp, or expand document references."
      `(("schema" . ,multihost-worker-protocol-version)
        ("id" . ,id)
        ("result" . ,(multihost-worker--encode-value result))))))
+
+(defun multihost-worker--execute-operation (payload directory)
+  "Execute Babel PAYLOAD in DIRECTORY."
+  (multihost-execute-spec payload directory))
+
+(defun multihost-worker--warmup-operation (_payload directory)
+  "Initialize a standard TRAMP connection to DIRECTORY."
+  (let ((default-directory directory))
+    (unless (file-directory-p directory) (error "Remote working directory does not exist"))
+    (list :status 'succeeded :value directory)))
+
+(defun multihost-worker--compgen-operation (payload directory)
+  "Run the optional completion handler with PAYLOAD in DIRECTORY."
+  (require 'multihost-compgen)
+  (funcall (intern "multihost-compgen-execute") payload directory))
+
+(defun multihost-worker--no-prompt (&rest _args)
+  "Reject interactive questions in unattended workers without answering them."
+  (error "Background authentication requires interaction; use foreground execution or an authorized unattended SSH configuration"))
+
+(defun multihost-worker--without-prompts (function)
+  "Call FUNCTION while preventing prompts from consuming RPC input."
+  (cl-letf (((symbol-function 'read-passwd) #'multihost-worker--no-prompt)
+            ((symbol-function 'read-string) #'multihost-worker--no-prompt)
+            ((symbol-function 'read-from-minibuffer) #'multihost-worker--no-prompt)
+            ((symbol-function 'yes-or-no-p) #'multihost-worker--no-prompt)
+            ((symbol-function 'y-or-n-p) #'multihost-worker--no-prompt))
+    (funcall function)))
+
+(defun multihost-worker--notify (worker kind &optional id)
+  "Write one bounded protocol notification for WORKER, KIND and ID."
+  (princ (concat "MULTIHOST-RPC/1 "
+                 (json-encode `(("worker" . ,worker) ("kind" . ,kind) ("id" . ,id))) "\n")))
+
+(defun multihost-worker--dispatch (request)
+  "Execute decoded REQUEST, returning a plain result without prompting."
+  (unwind-protect
+      (condition-case err
+      (multihost-worker--without-prompts
+       (lambda ()
+         (let* ((operation (intern (gethash "operation" request)))
+                (handler (alist-get operation multihost-worker-operation-functions))
+                (directory (gethash "directory" request))
+                result)
+           (unless handler (error "Unsupported worker operation: %s" operation))
+           (multihost-inventory--remote directory)
+           (unless (file-remote-p directory) (error "Worker requests require an explicit remote directory"))
+           (setq result (funcall handler
+                                 (multihost-worker--decode-value (gethash "payload" request)) directory))
+           (unless (memq (plist-get result :status) '(succeeded failed))
+             (error "Operation handler returned an invalid status"))
+           (setq result (plist-put result :worker-pid (emacs-pid)))
+           (plist-put result :reusable (null (plist-get result :error))))))
+    ((error quit)
+     (list :status 'failed :stdout "" :stderr "" :error (error-message-string err)
+           :worker-pid (emacs-pid) :reusable nil)))
+    ;; Babel appends diagnostics across evaluations; workers retain only the
+    ;; structured result, never an ever-growing secondary copy.
+    (dolist (name (list org-babel-error-buffer-name " *Org-Babel Error*"))
+      (when-let ((buffer (get-buffer name))) (kill-buffer buffer)))))
+
+(defun multihost-worker-daemon-main ()
+  "Run a persistent private JSON request loop in an isolated batch Emacs."
+  (let* ((bootstrap-file (pop command-line-args-left))
+         (bootstrap (multihost-worker--read-json bootstrap-file))
+         (worker (gethash "id" bootstrap))
+         (storage (gethash "storage" bootstrap))
+         (user-emacs-directory (file-name-as-directory (expand-file-name "emacs" storage)))
+         (tramp-persistency-file-name nil)
+         (enable-local-variables nil)
+         (enable-local-eval nil))
+    (unless (and (eql (gethash "schema" bootstrap) multihost-worker-protocol-version)
+                 (stringp worker) (stringp storage) (not (file-remote-p storage)))
+      (error "Invalid worker bootstrap"))
+    (make-directory user-emacs-directory t)
+    (set-file-modes user-emacs-directory #o700)
+    (multihost-worker--without-prompts
+     (lambda () (when-let ((init (gethash "init" bootstrap)))
+                  (when (file-remote-p init) (error "Worker init must be local"))
+                  (unless (equal (gethash "init_sha256" bootstrap)
+                                 (with-temp-buffer
+                                   (insert-file-contents-literally init)
+                                   (secure-hash 'sha256 (current-buffer))))
+                    (error "Worker init changed before initialization; submit it again"))
+                  (load init nil 'nomessage 'nosuffix))))
+    (delete-file bootstrap-file)
+    (multihost-worker--notify worker "ready")
+    (condition-case nil
+        (while t
+          ;; Only this outer read may consume stdin.  Authentication and other
+          ;; prompts inside initialization or an operation are rejected above.
+          (let* ((line (read-from-minibuffer ""))
+                 (_ (when (> (length line) 65536) (error "RPC envelope exceeds limit")))
+                 (envelope (json-parse-string line :object-type 'hash-table :array-type 'list
+                                              :null-object nil :false-object :false))
+                 (request-file (gethash "request" envelope))
+                 (result-file (gethash "result" envelope))
+                 (_ (unless (and (equal request-file (expand-file-name "request.json" storage))
+                                 (equal result-file (expand-file-name "result.json" storage)))
+                      (error "Invalid RPC envelope paths")))
+                 (request (multihost-worker--read-json request-file))
+                 (id (gethash "id" request)))
+            (unless (and (equal request-file (expand-file-name "request.json" storage))
+                         (equal result-file (expand-file-name "result.json" storage))
+                         (eql (gethash "schema" request) multihost-worker-protocol-version)
+                         (stringp id))
+              (error "Invalid RPC envelope or request"))
+            (multihost-worker--write-json
+             result-file `(("schema" . ,multihost-worker-protocol-version) ("id" . ,id)
+                           ("result" . ,(multihost-worker--encode-value (multihost-worker--dispatch request)))))
+            (multihost-worker--notify worker "result" id)))
+      (end-of-file nil))))
 
 (provide 'multihost-worker)
 ;;; multihost-worker.el ends here

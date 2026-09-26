@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2026 Multihost contributors
 ;; Author: Multihost contributors
-;; Version: 1.0.0
+;; Version: 1.1.0
 ;; Package-Requires: ((emacs "29.1") (org "9.6"))
 ;; Keywords: processes, tools, unix
 ;; URL: https://github.com/SweatierKey/emacs-multihost
@@ -21,6 +21,9 @@
 (require 'multihost-inventory)
 (require 'multihost-engine)
 
+(autoload 'multihost-connections "multihost-connections-ui" nil t)
+(autoload 'multihost-warm-connections "multihost-connections-ui" nil t)
+
 (defcustom multihost-inventory-file nil
   "JSON inventory file, or nil to use literal SSH aliases in Org blocks."
   :type '(choice (const nil) file) :group 'multihost)
@@ -36,6 +39,7 @@
 (defvar-local multihost--hosts nil)
 (defvar-local multihost--marks nil)
 (defvar-local multihost--view nil)
+(defvar-local multihost--refresh-timer nil)
 
 (defun multihost-current-inventory ()
   "Read the configured inventory afresh, or return nil."
@@ -132,7 +136,11 @@ RENDERER is digest, per-host, table or combined."
    (lambda (job)
      (list job (vector (number-to-string (1+ (multihost-job-index job)))
                        (multihost--job-label job)
-                       (symbol-name (multihost-job-status job))
+                       (if (and (eq (multihost-job-status job) 'running)
+                                (multihost-request-p (multihost-job-request job))
+                                (eq (multihost-request-status (multihost-job-request job)) 'queued))
+                           "waiting-pool"
+                         (symbol-name (multihost-job-status job)))
                        (format "%s" (or (multihost-job-exit-code job) "—"))
                        (format "%.2f" (multihost--duration job))
                        (multihost--plain (multihost-job-directory job)))))
@@ -187,7 +195,22 @@ RENDERER is digest, per-host, table or combined."
   (setq tabulated-list-format [("#" 4 nil) ("Host" 24 t) ("Status" 12 t)
                                ("Exit" 8 nil) ("Seconds" 9 nil) ("Directory" 45 t)]
         tabulated-list-padding 1)
-  (tabulated-list-init-header))
+  (tabulated-list-init-header)
+  (add-hook 'kill-buffer-hook #'multihost--stop-refresh-timer nil t)
+  (add-hook 'change-major-mode-hook #'multihost--stop-refresh-timer nil t))
+
+(defun multihost--stop-refresh-timer ()
+  "Stop this dashboard's parent-side refresh timer."
+  (when (timerp multihost--refresh-timer) (cancel-timer multihost--refresh-timer))
+  (setq multihost--refresh-timer nil))
+
+(defun multihost--refresh-running (buffer)
+  "Refresh visible BUFFER from local state until its run finishes."
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (when (get-buffer-window buffer t) (multihost-refresh))
+      (when (multihost-run-finished-p multihost--run)
+        (multihost--stop-refresh-timer)))))
 
 (defun multihost-show-run (run)
   "Display RUN without changing its execution order."
@@ -196,7 +219,10 @@ RENDERER is digest, per-host, table or combined."
     (with-current-buffer buffer
       (multihost-run-mode)
       (setq-local multihost--run run)
-      (multihost-refresh))
+      (multihost-refresh)
+      (unless (multihost-run-finished-p run)
+        (setq multihost--refresh-timer
+              (run-at-time 0.25 0.25 #'multihost--refresh-running buffer))))
     (pop-to-buffer buffer)))
 
 (defun multihost-cancel-run ()
@@ -443,6 +469,7 @@ isolated background workers can reuse the authentication."
                     ("T" . multihost-mark-all) ("U" . multihost-unmark-all)
                     ("x" . multihost-run-command) ("d" . multihost-dired)
                     ("s" . multihost-shell) ("h" . multihost-runs)
+                    ("w" . multihost-warm-connections) ("C" . multihost-connections)
                     ("g" . multihost-reload-inventory) ("v" . multihost-check-connection)))
       (define-key map (kbd (car pair)) (cdr pair)))
     map))
@@ -450,7 +477,7 @@ isolated background workers can reuse the authentication."
   "Select hosts: m/u mark, T/U all/none, x command, C-u x serial, s shell, d files."
   (setq tabulated-list-format [("" 1 nil) ("Host" 24 t) ("Groups" 22 t)
                                ("Connection" 42 t) ("Description" 30 t)]
-        header-line-format " m/u mark · T/U all/none · x command · C-u x serial · s shell · d files · h runs")
+        header-line-format " m/u mark · T/U all/none · x command · w connect · C connections · s shell · d files · h runs")
   (tabulated-list-init-header))
 
 ;;;###autoload

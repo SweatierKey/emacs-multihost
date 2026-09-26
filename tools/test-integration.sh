@@ -14,4 +14,5 @@ export PATH="$MULTIHOST_LAB_ROOT/bin:$PATH"
   -l "$MULTIHOST_LAB_ROOT/worker-init.el" \
   -l test/multihost-integration-test.el \
   -l test/multihost-org-integration-test.el \
+  -l test/multihost-connection-integration-test.el \
   --eval '(ert-run-tests-batch-and-exit (or (getenv "MULTIHOST_TEST_SELECTOR") t))'

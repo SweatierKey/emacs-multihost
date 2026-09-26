@@ -11,6 +11,7 @@
      (unwind-protect (progn ,@body)
        (dolist (run multihost-runs)
          (unless (multihost-run-finished-p run) (multihost-cancel run)))
+       (multihost-connection-reset)
        (sleep-for 0.03)
        (delete-directory multihost-state-directory t))))
 
@@ -128,8 +129,7 @@
                                  (multihost-engine-test--hosts 1))))
       (multihost-engine-test--wait run)
       (should (eq (multihost-job-status (car (multihost-run-jobs run))) 'failed))
-      (should-not (file-exists-p (multihost-engine--job-file run (car (multihost-run-jobs run))
-                                                              "request.json"))))))
+      (should-not (multihost-connection-snapshots)))))
 
 (ert-deftest multihost-engine-worker-crash-is-distinct-from-command-exit ()
   (multihost-engine-test--isolated
@@ -183,45 +183,39 @@
       (multihost-engine-test--wait run)
       (should (equal (multihost-job-stdout job) "preserved")))))
 
-(ert-deftest multihost-engine-rejects-wrong-id-and-false-success-protocol ()
+(ert-deftest multihost-engine-rejects-malformed-execution-results ()
   (multihost-engine-test--isolated
-    (dolist (fault '(wrong-id false-success malformed-json))
+    (dolist (result '((:status succeeded :exit-code 7 :stdout "" :stderr "")
+                      (:status succeeded :exit-code 0 :stdout 4 :stderr "")
+                      (:status succeeded :exit-code 0 :stdout "" :stderr ("bad"))
+                      (:status failed :exit-code (7) :stdout "" :stderr "")
+                      (:status succeeded :exit-code 0 :stderr "")
+                      (:status failed :stdout "" :stderr "" :error 4)))
       (let* ((run (multihost-create-run (multihost-engine-test--spec)
                                        (multihost-engine-test--hosts 1)))
-             (job (car (multihost-run-jobs run)))
-             (file (multihost-engine--job-file run job "result.json"))
-             (process (make-process :name "multihost-protocol-test" :noquery t
-                                    :buffer (generate-new-buffer " *multihost-protocol-test*")
-                                    :command '("/bin/true") :sentinel #'ignore)))
-        (while (process-live-p process) (accept-process-output process 0.01))
-        (setf (multihost-job-status job) 'running (multihost-job-process job) process)
-        (if (eq fault 'malformed-json)
-            (with-temp-file file (insert "{invalid JSON"))
-          (multihost-worker--write-json
-           file `(("schema" . 1)
-                  ("id" . ,(if (eq fault 'wrong-id) "different-job" (multihost-job-id job)))
-                  ("result" . ,(multihost-worker--encode-value
-                                (list :status 'succeeded
-                                      :exit-code (unless (eq fault 'false-success) 0)
-                                      :stdout "output" :stderr ""))))))
-        (multihost-engine--sentinel run job process "finished")
+             (job (car (multihost-run-jobs run))) callback
+             (request (make-multihost-request :status 'failed)))
+        (cl-letf (((symbol-function 'multihost-connection-submit)
+                   (lambda (_dir _op _payload cb &rest _) (setq callback cb) request)))
+          (multihost-engine--launch run job))
+        (funcall callback request result)
         (should (eq (multihost-job-status job) 'failed))
-        (should-not (multihost-job-exit-code job))
-        (should-not (file-exists-p file))))))
+        (should (string-match-p "Invalid execution response" (multihost-job-error job)))
+        (should (equal (multihost-job-stdout job) ""))))))
 
-(ert-deftest multihost-engine-timeout-stops-worker-and-ignores-late-sentinel ()
+(ert-deftest multihost-engine-ignores-late-connection-callback ()
   (multihost-engine-test--isolated
     (let* ((run (multihost-create-run (multihost-engine-test--spec)
                                      (multihost-engine-test--hosts 1)))
-           (job (car (multihost-run-jobs run)))
-           (process (make-process :name "multihost-timeout-test" :noquery t
-                                  :command '("sleep" "10") :sentinel #'ignore)))
-      (setf (multihost-job-status job) 'running (multihost-job-process job) process)
-      (multihost-engine--timeout run job)
+           (job (car (multihost-run-jobs run))) callback
+           (request (make-multihost-request :status 'timed-out)))
+      (cl-letf (((symbol-function 'multihost-connection-submit)
+                 (lambda (_dir _op _payload cb &rest _) (setq callback cb) request)))
+        (multihost-engine--launch run job))
+      (funcall callback request '(:status timed-out :stdout "" :stderr "" :error "deadline"))
+      (funcall callback request '(:status succeeded :exit-code 0 :stdout "late" :stderr ""))
       (should (eq (multihost-job-status job) 'timed-out))
-      (should-not (process-live-p process))
-      (multihost-engine--sentinel run job process "killed")
-      (should (eq (multihost-job-status job) 'timed-out)))))
+      (should (equal (multihost-job-stdout job) "")))))
 
 (ert-deftest multihost-engine-freezes-mutable-source-and-inventory-strings ()
   (multihost-engine-test--isolated
@@ -265,6 +259,26 @@
         (should (equal (multihost-host-connection (multihost-job-host saved-job)) selector))
         (should (eq (multihost-job-status saved-job) 'succeeded))
         (should (equal (multihost-job-stdout saved-job) "healthy\n"))))))
+
+(ert-deftest multihost-engine-fail-fast-skips-pool-queued-requests ()
+  (multihost-engine-test--isolated
+    (let ((multihost-connection-limit 1)
+          (multihost-worker-init-file (expand-file-name "init.el" multihost-state-directory))
+          (marker (expand-file-name "executions" multihost-state-directory)))
+      (with-temp-file multihost-worker-init-file
+        (prin1 `(setq multihost-worker-operation-functions
+                      '((execute . (lambda (_payload directory)
+                                     (with-temp-buffer (insert directory "\n")
+                                                       (append-to-file (point-min) (point-max) ,marker))
+                                     (list :status 'failed :exit-code 7 :stdout "" :stderr "")))))
+               (current-buffer)))
+      (let ((run (multihost-start (multihost-engine-test--spec) (multihost-engine-test--hosts 4)
+                                  :concurrency 4 :fail-fast t)))
+        (multihost-engine-test--wait run)
+        (should (equal (mapcar #'multihost-job-status (multihost-run-jobs run))
+                       '(failed skipped skipped skipped)))
+        (with-temp-buffer (insert-file-contents marker)
+                          (should (equal (buffer-string) "/ssh:host0:~/\n")))))))
 
 (provide 'multihost-engine-test)
 ;;; multihost-engine-test.el ends here

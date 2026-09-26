@@ -12,15 +12,17 @@
   <nav><a href="https://github.com/SweatierKey/emacs-multihost">Source and installation</a></nav>
   <p class="eyebrow">EMACS · ORG BABEL · TRAMP</p>
   <h1>From a host list<br>to an operations runbook.</h1>
-  <p class="lead">Mark hosts, run a check, inspect each result, and keep repeatable work in Org.</p>
+  <p class="lead">Retain SSH connections, complete remote filenames, run checks, and keep repeatable work in Org.</p>
   <div id="player" aria-label="Recorded Emacs session"></div>
   <p class="caption">Actual terminal output and keyboard input. Vertico and Marginalia are enabled.
     Two loopback SSH endpoints share one kernel; this is not a CyberArk deployment test.</p>
   <div class="grid">
     <section><h2>What the recording shows</h2>
       <ol>
-        <li><code>M-x multihost</code>, <code>T</code>, <code>x</code>: run a check on two marked hosts.</li>
+        <li><code>M-x multihost</code>, <code>T</code>, <code>w</code>, <code>C</code>: initialize two SSH connections and inspect retained workers.</li>
+        <li><code>x</code>: run a check on both marked hosts using the connection pool.</li>
         <li><code>RET</code>, <code>a</code>, <code>d</code>: separate output, combined output, and digest.</li>
+        <li><code>M-x multihost-org-completion-enable</code>, <code>M-TAB</code>: remote filename completion with host annotations, also inside <code>C-c '</code>.</li>
         <li><code>C-c C-c</code>: execute an Org block serially in the selected host order.</li>
         <li>An intentional remote failure retains exit <code>7</code> and stderr.</li>
       </ol>
@@ -39,6 +41,7 @@ python3 -m http.server 8000</code></pre>
     <a href="demo-results.json">Assertions and observed results</a>
     <a href="demo-keys.json">Keystroke trace</a>
     <a href="psmp.md">PSMP deployment notes</a>
+    <a href="connection-performance.json">Measured connection and timer timings</a>
     <a href="player/provenance.json">Player provenance</a>
   </footer>
 </main>

@@ -33,10 +33,14 @@
           (multihost-state-directory (expand-file-name "test-state" lab))
           (multihost-worker-init-file (expand-file-name "worker-init.el" lab))
           (multihost-integration--runs nil))
+     ;; Org integration tests use this helper too.  Every test owns its pool,
+     ;; so authentication caches and workers cannot leak between scenarios.
+     (multihost-connection-reset)
      (unwind-protect (progn ,@body)
        (dolist (run multihost-integration--runs)
          (unless (multihost-run-finished-p run)
-           (multihost-cancel run))))))
+           (multihost-cancel run)))
+       (multihost-connection-reset))))
 
 (defun multihost-integration--host (role &optional explicit)
   "Return lab ROLE; EXPLICIT requests user and port instead of an alias."

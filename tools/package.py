@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--version', default='1.0.0')
+    parser.add_argument('--version', default='1.1.0')
     args = parser.parse_args()
     if not all(c.isalnum() or c in '.-' for c in args.version):
         raise SystemExit('Invalid version')

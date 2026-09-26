@@ -4,8 +4,10 @@
   "transport": "two loopback SSH endpoints, one kernel",
   "cyberark_tested": false,
   "checks": [
-    "Inventory marking and parallel execution on both real SSH endpoints",
+    "w initializes SSH outside the editor; C shows two retained idle workers",
+    "Inventory marking and parallel execution reuse both warmed worker PIDs on real SSH endpoints",
     "RET, a and d open separate, combined and digest result buffers",
+    "Explicit remote completion opt-in; M-TAB shows host-specific candidates in Org and C-c ' source editor",
     "C-c C-c preserves Org execution confirmation",
     "Serial Org execution preserves db-01 then web-01 order",
     "Combined and table renderers insert results into the originating Org block",
@@ -14,7 +16,7 @@
   "runs": [
     {
       "label": "inventory parallel check",
-      "id": "20260926T163856-PwtKlr",
+      "id": "20260926T181209-YATHwB",
       "state": "finished",
       "concurrency": 2,
       "jobs": [
@@ -25,8 +27,9 @@
           "stdout": "role=web\nservice=active\n",
           "stderr": "",
           "error": null,
-          "started": 1790433536.7970152,
-          "ended": 1790433538.9111147
+          "worker_pid": 92180,
+          "started": 1790439129.4329681,
+          "ended": 1790439130.757912
         },
         {
           "host": "db-01",
@@ -35,14 +38,15 @@
           "stdout": "role=db\nservice=active\n",
           "stderr": "",
           "error": null,
-          "started": 1790433536.797712,
-          "ended": 1790433538.9101682
+          "worker_pid": 92181,
+          "started": 1790439129.4334357,
+          "ended": 1790439130.726979
         }
       ]
     },
     {
       "label": "serial Org runbook",
-      "id": "20260926T163911-FgfJwt",
+      "id": "20260926T181232-E4qhkL",
       "state": "finished",
       "concurrency": 1,
       "jobs": [
@@ -53,8 +57,9 @@
           "stdout": "role=db\nservice=active\ncheck completed\n",
           "stderr": "",
           "error": null,
-          "started": 1790433551.8781033,
-          "ended": 1790433554.6278975
+          "worker_pid": 92181,
+          "started": 1790439152.5515065,
+          "ended": 1790439153.7715302
         },
         {
           "host": "web-01",
@@ -63,14 +68,15 @@
           "stdout": "role=web\nservice=active\ncheck completed\n",
           "stderr": "",
           "error": null,
-          "started": 1790433554.628885,
-          "ended": 1790433557.375199
+          "worker_pid": 92180,
+          "started": 1790439153.772189,
+          "ended": 1790439154.9435894
         }
       ]
     },
     {
       "label": "intentional Org failure",
-      "id": "20260926T163924-SFWCys",
+      "id": "20260926T181241-ltswbr",
       "state": "finished",
       "concurrency": 2,
       "jobs": [
@@ -81,8 +87,9 @@
           "stdout": "web check passed\n",
           "stderr": "",
           "error": null,
-          "started": 1790433564.205513,
-          "ended": 1790433566.2181568
+          "worker_pid": 92180,
+          "started": 1790439161.602575,
+          "ended": 1790439162.2833786
         },
         {
           "host": "db-01",
@@ -91,8 +98,9 @@
           "stdout": "",
           "stderr": "database check failed\n",
           "error": null,
-          "started": 1790433564.2062469,
-          "ended": 1790433566.2285304
+          "worker_pid": 92181,
+          "started": 1790439161.6030924,
+          "ended": 1790439162.3026047
         }
       ]
     }
@@ -107,36 +115,52 @@
       "text": "  web-01                   lab                    /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/ Local SSH fixture: web\n  db-01                    lab                    /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/ Local SSH fixture: db\n"
     },
     {
+      "label": "both connections initialized",
+      "buffer": "*Multihost connect*",
+      "mode": "multihost-warmup-mode",
+      "vertico": true,
+      "marginalia": true,
+      "text": "web-01                   succeeded      0.721      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\ndb-01                    succeeded      0.689      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n"
+    },
+    {
+      "label": "persistent connection dashboard",
+      "buffer": "*Multihost connections*",
+      "mode": "multihost-connections-mode",
+      "vertico": true,
+      "marginalia": true,
+      "text": "/ssh:mh-lab-db:                                              idle           92181        0        1\n/ssh:mh-lab-web:                                             idle           92180        0        1\n"
+    },
+    {
       "label": "parallel dashboard",
-      "buffer": "*Multihost 20260926T163856-PwtKlr*",
+      "buffer": "*Multihost 20260926T181209-YATHwB*",
       "mode": "multihost-run-mode",
       "vertico": true,
       "marginalia": true,
-      "text": " 1    web-01                   succeeded    0        2.11      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\n 2    db-01                    succeeded    0        2.11      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n"
+      "text": " 1    web-01                   succeeded    0        1.32      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\n 2    db-01                    succeeded    0        1.29      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n"
     },
     {
       "label": "one host output",
-      "buffer": "*Multihost 20260926T163856-PwtKlr / web-01*",
+      "buffer": "*Multihost 20260926T181209-YATHwB / web-01*",
       "mode": "multihost-output-mode",
       "vertico": true,
       "marginalia": true,
-      "text": "web-01\n/ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\nStatus: succeeded  Exit: 0  Duration: 2.114s\n\nSTDOUT\nrole=web\nservice=active\n\n\nSTDERR\n\n"
+      "text": "web-01\n/ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\nStatus: succeeded  Exit: 0  Duration: 1.325s\n\nSTDOUT\nrole=web\nservice=active\n\n\nSTDERR\n\n"
     },
     {
       "label": "combined output",
-      "buffer": "*Multihost 20260926T163856-PwtKlr / all hosts*",
+      "buffer": "*Multihost 20260926T181209-YATHwB / all hosts*",
       "mode": "multihost-output-mode",
       "vertico": true,
       "marginalia": true,
-      "text": "Run 20260926T163856-PwtKlr · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| web-01 | succeeded | 0 | 2.114 |\n| db-01 | succeeded | 0 | 2.112 |\n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: \n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: "
+      "text": "Run 20260926T181209-YATHwB · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| web-01 | succeeded | 0 | 1.325 |\n| db-01 | succeeded | 0 | 1.294 |\n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: \n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: "
     },
     {
       "label": "digest",
-      "buffer": "*Multihost 20260926T163856-PwtKlr / digest*",
+      "buffer": "*Multihost 20260926T181209-YATHwB / digest*",
       "mode": "multihost-output-mode",
       "vertico": true,
       "marginalia": true,
-      "text": "Run 20260926T163856-PwtKlr · finished · 2 hosts\n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: \n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: "
+      "text": "Run 20260926T181209-YATHwB · finished · 2 hosts\n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: \n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: "
     },
     {
       "label": "runbook before execution",
@@ -147,12 +171,28 @@
       "text": "#+title: Operations runbook · isolated SSH lab\n#+startup: showall\n\n* Serial health check\nRun db-01 first; wait for completion before starting web-01.\n\n#+begin_src sh :hosts db-01 web-01 :concurrency 1 :renderer combined :results output :timeout 20\ncat status.txt\nsleep 0.5\nprintf 'check completed\\n'\n#+end_src\n\n* Intentional failure\nThe database fixture returns exit 7; the web fixture succeeds.\n\n#+begin_src sh :hosts @lab :concurrency 2 :renderer table :results output :timeout 20\nif grep -q 'role=db' status.txt; then\n  printf 'database check failed\\n' >&2\n  exit 7\nfi\nprintf 'web check passed\\n'\n#+end_src\n"
     },
     {
+      "label": "remote completion inside Org",
+      "buffer": "runbook.org",
+      "mode": "org-mode",
+      "vertico": true,
+      "marginalia": true,
+      "text": "#+title: Operations runbook · isolated SSH lab\n#+startup: showall\n\n* Serial health check\nRun db-01 first; wait for completion before starting web-01.\n\n#+begin_src sh :hosts db-01 web-01 :concurrency 1 :renderer combined :results output :timeout 20\ncat ops-\nsleep 0.5\nprintf 'check completed\\n'\n#+end_src\n\n* Intentional failure\nThe database fixture returns exit 7; the web fixture succeeds.\n\n#+begin_src sh :hosts @lab :concurrency 2 :renderer table :results output :timeout 20\nif grep -q 'role=db' status.txt; then\n  printf 'database check failed\\n' >&2\n  exit 7\nfi\nprintf 'web check passed\\n'\n#+end_src\n"
+    },
+    {
+      "label": "remote completion inside shell source editor",
+      "buffer": "*Org Src runbook.org[ sh ]*",
+      "mode": "sh-mode",
+      "vertico": true,
+      "marginalia": true,
+      "text": "cat ops-\nsleep 0.5\nprintf 'check completed\\n'\n"
+    },
+    {
       "label": "serial dashboard",
-      "buffer": "*Multihost 20260926T163911-FgfJwt*",
+      "buffer": "*Multihost 20260926T181232-E4qhkL*",
       "mode": "multihost-run-mode",
       "vertico": true,
       "marginalia": true,
-      "text": " 1    db-01                    succeeded    0        2.75      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n 2    web-01                   succeeded    0        2.75      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\n"
+      "text": " 1    db-01                    succeeded    0        1.22      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n 2    web-01                   succeeded    0        1.17      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\n"
     },
     {
       "label": "Org inserted combined results",
@@ -160,23 +200,23 @@
       "mode": "org-mode",
       "vertico": true,
       "marginalia": true,
-      "text": "#+title: Operations runbook · isolated SSH lab\n#+startup: showall\n\n* Serial health check\nRun db-01 first; wait for completion before starting web-01.\n\n#+begin_src sh :hosts db-01 web-01 :concurrency 1 :renderer combined :results output :timeout 20\ncat status.txt\nsleep 0.5\nprintf 'check completed\\n'\n#+end_src\n\n#+RESULTS:\n:results:\nRun 20260926T163911-FgfJwt · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| db-01 | succeeded | 0 | 2.750 |\n| web-01 | succeeded | 0 | 2.746 |\n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: check completed\n: \n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: check completed\n: \n:end:\n\n* Intentional failure\nThe database fixture returns exit 7; the web fixture succeeds.\n\n#+begin_src sh :hosts @lab :concurrency 2 :renderer table :results output :timeout 20\nif grep -q 'role=db' status.txt; then\n  printf 'database check failed\\n' >&2\n  exit 7\nfi\nprintf 'web check passed\\n'\n#+end_src\n"
+      "text": "#+title: Operations runbook · isolated SSH lab\n#+startup: showall\n\n* Serial health check\nRun db-01 first; wait for completion before starting web-01.\n\n#+begin_src sh :hosts db-01 web-01 :concurrency 1 :renderer combined :results output :timeout 20\ncat status.txt\nsleep 0.5\nprintf 'check completed\\n'\n#+end_src\n\n#+RESULTS:\n:results:\nRun 20260926T181232-E4qhkL · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| db-01 | succeeded | 0 | 1.220 |\n| web-01 | succeeded | 0 | 1.171 |\n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: check completed\n: \n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: check completed\n: \n:end:\n\n* Intentional failure\nThe database fixture returns exit 7; the web fixture succeeds.\n\n#+begin_src sh :hosts @lab :concurrency 2 :renderer table :results output :timeout 20\nif grep -q 'role=db' status.txt; then\n  printf 'database check failed\\n' >&2\n  exit 7\nfi\nprintf 'web check passed\\n'\n#+end_src\n"
     },
     {
       "label": "failure dashboard",
-      "buffer": "*Multihost 20260926T163924-SFWCys*",
+      "buffer": "*Multihost 20260926T181241-ltswbr*",
       "mode": "multihost-run-mode",
       "vertico": true,
       "marginalia": true,
-      "text": " 1    web-01                   succeeded    0        2.01      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\n 2    db-01                    failed       7        2.02      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n"
+      "text": " 1    web-01                   succeeded    0        0.68      /ssh:mh-lab-web:/home/admin/emacs-multihost/.runtime/lab/web/\n 2    db-01                    failed       7        0.70      /ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\n"
     },
     {
       "label": "stderr and exit 7",
-      "buffer": "*Multihost 20260926T163924-SFWCys / db-01*",
+      "buffer": "*Multihost 20260926T181241-ltswbr / db-01*",
       "mode": "multihost-output-mode",
       "vertico": true,
       "marginalia": true,
-      "text": "db-01\n/ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\nStatus: failed  Exit: 7  Duration: 2.022s\n\nSTDOUT\n\n\nSTDERR\ndatabase check failed\n\n\nVALUE\n\"\"\n"
+      "text": "db-01\n/ssh:mh-lab-db:/home/admin/emacs-multihost/.runtime/lab/db/\nStatus: failed  Exit: 7  Duration: 0.700s\n\nSTDOUT\n\n\nSTDERR\ndatabase check failed\n\n\nVALUE\n\"\"\n"
     },
     {
       "label": "Org final table",
@@ -184,18 +224,45 @@
       "mode": "org-mode",
       "vertico": true,
       "marginalia": true,
-      "text": "#+title: Operations runbook · isolated SSH lab\n#+startup: showall\n\n* Serial health check\nRun db-01 first; wait for completion before starting web-01.\n\n#+begin_src sh :hosts db-01 web-01 :concurrency 1 :renderer combined :results output :timeout 20\ncat status.txt\nsleep 0.5\nprintf 'check completed\\n'\n#+end_src\n\n#+RESULTS:\n:results:\nRun 20260926T163911-FgfJwt · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| db-01 | succeeded | 0 | 2.750 |\n| web-01 | succeeded | 0 | 2.746 |\n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: check completed\n: \n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: check completed\n: \n:end:\n\n* Intentional failure\nThe database fixture returns exit 7; the web fixture succeeds.\n\n#+begin_src sh :hosts @lab :concurrency 2 :renderer table :results output :timeout 20\nif grep -q 'role=db' status.txt; then\n  printf 'database check failed\\n' >&2\n  exit 7\nfi\nprintf 'web check passed\\n'\n#+end_src\n\n#+RESULTS:\n:results:\nRun 20260926T163924-SFWCys · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| web-01 | succeeded | 0 | 2.013 |\n| db-01 | failed | 7 | 2.022 |\n:end:\n"
+      "text": "#+title: Operations runbook · isolated SSH lab\n#+startup: showall\n\n* Serial health check\nRun db-01 first; wait for completion before starting web-01.\n\n#+begin_src sh :hosts db-01 web-01 :concurrency 1 :renderer combined :results output :timeout 20\ncat status.txt\nsleep 0.5\nprintf 'check completed\\n'\n#+end_src\n\n#+RESULTS:\n:results:\nRun 20260926T181232-E4qhkL · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| db-01 | succeeded | 0 | 1.220 |\n| web-01 | succeeded | 0 | 1.171 |\n\ndb-01 · succeeded · exit 0\n: role=db\n: service=active\n: check completed\n: \n\nweb-01 · succeeded · exit 0\n: role=web\n: service=active\n: check completed\n: \n:end:\n\n* Intentional failure\nThe database fixture returns exit 7; the web fixture succeeds.\n\n#+begin_src sh :hosts @lab :concurrency 2 :renderer table :results output :timeout 20\nif grep -q 'role=db' status.txt; then\n  printf 'database check failed\\n' >&2\n  exit 7\nfi\nprintf 'web check passed\\n'\n#+end_src\n\n#+RESULTS:\n:results:\nRun 20260926T181241-ltswbr · finished · 2 hosts\n\n| Host | Status | Exit | Seconds |\n|------+--------+------+---------|\n| web-01 | succeeded | 0 | 0.681 |\n| db-01 | failed | 7 | 0.700 |\n:end:\n"
     }
   ],
+  "initialized_connections": [
+    {
+      "key": "042c2ab1d9eb497342186965c3ce773e5a63e33e57c1065a9fed6c7d33699f3b",
+      "directory": "/ssh:mh-lab-db:",
+      "state": "idle",
+      "pid": 92181,
+      "queued": 0,
+      "completed": 1,
+      "started-at": 1790439122.4266126,
+      "last-used": 1790439123.1144345
+    },
+    {
+      "key": "20abcab3c315ee444a6232a4c073e9dacf9ae8b1d24fa738aeadbeaf15a749d4",
+      "directory": "/ssh:mh-lab-web:",
+      "state": "idle",
+      "pid": 92180,
+      "queued": 0,
+      "completed": 1,
+      "started-at": 1790439122.4258947,
+      "last-used": 1790439123.1460683
+    }
+  ],
+  "completion_display": "Type M-RET on a completion to select it.\nType M-<down> or M-<up> to move point between completions.\n\n2 possible completions:\nops-db.log [db-01; 1/2 hosts]\nops-web.log [web-01; 1/2 hosts]",
   "org_source_unchanged": true,
   "passed": true,
   "source_sha256": {
-    "multihost.el": "96460da41eb80abbb607c103349f153efc6830ddba29fcf3f4c519eb2ec452a4",
-    "ob-multihost.el": "cba418ed253205d9f06fc3fa231bfd10bd5d51598299d841ac50676fd3d61e90",
-    "multihost-worker.el": "6fd38c17f3cd6bc6ff0fe5c2e2c557a94ddc60fadb3592a00306b542c2d29537",
-    "multihost-inventory.el": "0ac091e4256a68f1d243d9bb94a05880d4799526ea234edada3c69f9e16e9059",
-    "multihost-engine.el": "d11d440d1ffcc6b511dce6646c038e2591ad55625722ef04d862a2c5d1719b56"
+    "multihost.el": "ab45ed0464052cdff6b0b26966fd4731d38e82aada6c53c9d81f0c6f23238e53",
+    "multihost-connection.el": "ccbc4842e04512bfd436807d0bb738dd950a5ab0bf92f227675494268bae6042",
+    "ob-multihost.el": "bfecf614622df3906f3f523f8dd8347833118dfa9dced5ea863e2a57169be50f",
+    "multihost-connections-ui.el": "2070f91a40d1e1bb83c50b811e5ebb80dc675df6dae58aaa1ef4390a00811030",
+    "multihost-worker.el": "0a10848f346ec09694e0f9e0ee8940c84a020142f42a6c3f7032256078e3e8c0",
+    "multihost-compgen.el": "cb6f61941f6cc1dbae43278374268074325c61bcadd55137a5f11a7a8bc72d07",
+    "multihost-inventory.el": "e819770f9358b64ce58349e463a9cea84ed502feb89ed426dc700889621a0fdf",
+    "multihost-completion.el": "ed1926c31615c898ee6bd4ece8c099d2c756fbdb6ba80e07648dca02e916ff99",
+    "multihost-engine.el": "c4981833e9b0db07c04b68c009bee632c3b076778f8fee2745d0adcd53a7b99f"
   },
   "source_unchanged": true,
-  "duration_seconds": 46.781
+  "duration_seconds": 56.314
 }

@@ -5,6 +5,7 @@ emacsclient is used only to inspect state and shut down.  Demonstrated commands 
 as keyboard bytes to Emacs running in a PTY.  Run prepare-demo.py first.
 """
 
+import argparse
 import codecs
 import fcntl
 import hashlib
@@ -24,6 +25,7 @@ import traceback
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / ".runtime"
 DEMO = RUNTIME / "demo"
+OUTPUT_ROOT = ROOT
 
 
 class Recording:
@@ -116,6 +118,8 @@ class Recording:
                      (stdout . ,(multihost-job-stdout job))
                      (stderr . ,(multihost-job-stderr job))
                      (error . ,(multihost-job-error job))
+                     (worker_pid . ,(when (multihost-job-process job)
+                                      (process-id (multihost-job-process job))))
                      (started . ,(multihost-job-started-at job))
                      (ended . ,(multihost-job-ended-at job))))
                  (multihost-run-jobs run))))))))""")
@@ -129,6 +133,14 @@ class Recording:
                 return self.run()
             self.pump(0.25)
         raise AssertionError("Run did not finish within 35 seconds")
+
+    def wait_true(self, expression, timeout=25):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if self.evaluate(expression) == "t":
+                return
+            self.pump(0.1)
+        raise AssertionError("State deadline: " + expression)
 
     def switch(self, buffer):
         self.key(b"\x18b", "C-x b")
@@ -169,10 +181,11 @@ class Recording:
         header = {"version": 2, "width": 120, "height": 34, "timestamp": self.timestamp,
                   "title": "Multihost: real Emacs, Org, TRAMP, Vertico and Marginalia",
                   "env": {"TERM": "xterm-256color", "SHELL": "/bin/sh"}}
-        (ROOT / "recordings").mkdir(exist_ok=True)
-        (ROOT / "recordings/demo.cast").write_text("\n".join(json.dumps(item, ensure_ascii=False)
+        (OUTPUT_ROOT / "recordings").mkdir(parents=True, exist_ok=True)
+        (OUTPUT_ROOT / "docs").mkdir(parents=True, exist_ok=True)
+        (OUTPUT_ROOT / "recordings/demo.cast").write_text("\n".join(json.dumps(item, ensure_ascii=False)
                                                             for item in [header] + self.events) + "\n")
-        (ROOT / "docs/demo-keys.json").write_text(json.dumps(self.keys, indent=2) + "\n")
+        (OUTPUT_ROOT / "docs/demo-keys.json").write_text(json.dumps(self.keys, indent=2) + "\n")
 
 
 def demonstrate(recording):
@@ -194,6 +207,23 @@ def demonstrate(recording):
     assert "web-01" in inventory["text"] and "db-01" in inventory["text"]
     recording.key("T", "T — mark every inventory host", 0.7)
     assert recording.evaluate("(with-current-buffer (window-buffer (selected-window)) (length multihost--marks))") == "2"
+    recording.key("w", "w — initialize both connections asynchronously", 0.5)
+    recording.key(b"\x181", "C-x 1")
+    recording.wait_true("""(with-current-buffer (window-buffer (selected-window))
+      (and (= (length multihost-connections--warmups) 2)
+           (cl-every (lambda (row) (eq (plist-get row :status) 'succeeded)) multihost-connections--warmups)))""")
+    capture("both connections initialized")
+    recording.pump(0.7)
+    recording.switch(inventory["buffer"])
+    recording.key("C", "C — inspect retained connection workers", 0.5)
+    recording.key(b"\x181", "C-x 1")
+    capture("persistent connection dashboard")
+    evidence["initialized_connections"] = recording.query("(vconcat (multihost-connection-snapshots))")
+    assert len(evidence["initialized_connections"]) == 2
+    assert all(row["state"] == "idle" for row in evidence["initialized_connections"])
+    recording.pump(0.7)
+    recording.switch(inventory["buffer"])
+    evidence["checks"].append("w initializes SSH outside the editor; C shows two retained idle workers")
     recording.key("x", "x — run command", 0.4)
     recording.key("cat status.txt", "cat status.txt", 0.6)
     recording.key(b"\r", "RET — execute on marked hosts", 0.3)
@@ -203,8 +233,9 @@ def demonstrate(recording):
     assert all(job["status"] == "succeeded" for job in parallel["jobs"])
     assert [job["host"] for job in parallel["jobs"]] == ["web-01", "db-01"]
     assert "role=web" in parallel["jobs"][0]["stdout"] and "role=db" in parallel["jobs"][1]["stdout"]
+    assert {job["worker_pid"] for job in parallel["jobs"]} == {row["pid"] for row in evidence["initialized_connections"]}
     evidence["runs"].append(dict(label="inventory parallel check", **parallel))
-    evidence["checks"].append("Inventory marking and parallel execution on both real SSH endpoints")
+    evidence["checks"].append("Inventory marking and parallel execution reuse both warmed worker PIDs on real SSH endpoints")
     dashboard = capture("parallel dashboard")["buffer"]
     recording.pump(1)
     recording.key(b"\x1b<", "M-<")
@@ -230,6 +261,39 @@ def demonstrate(recording):
     recording.key(b"\x181", "C-x 1")
     recording.key(b"\x1b<", "M-<")
     capture("runbook before execution")
+    recording.search("cat status.txt")
+    recording.key(b"\x01\x0b", "C-a C-k — temporarily edit the command line", 0.2)
+    recording.key("cat ops-", "cat ops- — remote filename prefix", 0.25)
+    recording.mx("multihost-org-completion-enable")
+    recording.wait_true("""(with-current-buffer (window-buffer (selected-window))
+      (let ((results (multihost-completion-results)))
+        (and (= (length results) 2)
+             (cl-every (lambda (row) (eq (plist-get (cdr row) :status) 'succeeded)) results))))""")
+    recording.key(b"\x1b\t", "M-TAB — complete files from both hosts", 0.8)
+    completion_text = recording.query('(with-current-buffer "*Completions*" (buffer-string))')
+    assert all(text in completion_text for text in ("ops-db.log", "ops-web.log", "db-01", "web-01", "1/2 hosts"))
+    evidence["completion_display"] = completion_text
+    capture("remote completion inside Org")
+    recording.pump(1)
+    recording.key(b"\x03'", "C-c ' — edit the shell block", 0.6)
+    recording.key(b"\x181", "C-x 1", 0.25)
+    assert recording.evaluate("(with-current-buffer (window-buffer (selected-window)) (and (org-src-edit-buffer-p) (multihost-completion-enabled-p)))") == "t"
+    recording.key(b"\x1b\t", "M-TAB — request remote candidates in source editor", 0.5)
+    recording.wait_true("""(with-current-buffer (window-buffer (selected-window))
+      (let ((results (multihost-completion-results)))
+        (and (= (length results) 2)
+             (cl-every (lambda (row) (eq (plist-get (cdr row) :status) 'succeeded)) results))))""")
+    recording.key(b"\x1b\t", "M-TAB — display cached annotated candidates", 0.8)
+    assert "1/2 hosts" in recording.query('(with-current-buffer "*Completions*" (buffer-string))')
+    capture("remote completion inside shell source editor")
+    recording.pump(0.7)
+    recording.key(b"\x03'", "C-c ' — return to Org", 0.5)
+    recording.key(b"\x181", "C-x 1", 0.2)
+    recording.key(b"\x01\x0b", "C-a C-k — restore the original check", 0.2)
+    recording.key("cat status.txt", "cat status.txt", 0.3)
+    assert source_pattern.findall(recording.snapshot()["text"]) == original_bodies
+    evidence["checks"].append("Explicit remote completion opt-in; M-TAB shows host-specific candidates in Org and C-c ' source editor")
+    recording.key(b"\x1b<", "M-<")
     serial = recording.execute_org_block()
     assert serial["state"] == "finished" and serial["concurrency"] == 1
     assert all(job["status"] == "succeeded" for job in serial["jobs"])
@@ -271,6 +335,12 @@ def demonstrate(recording):
 
 
 def main():
+    global OUTPUT_ROOT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--draft", action="store_true", help="Write trial recordings privately under .runtime/demo-draft")
+    options = parser.parse_args()
+    if options.draft:
+        OUTPUT_ROOT = RUNTIME / "demo-draft"
     subprocess.run(["python3", str(ROOT / "tools/prepare-demo.py")], check=True)
     source_files = list(ROOT.glob("*.el"))
     before = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in source_files}
@@ -278,6 +348,8 @@ def main():
     evidence = {"passed": False}
     try:
         subprocess.run(["python3", str(ROOT / "tools/lab.py"), "start"], check=True)
+        for role in ("web", "db"):
+            (RUNTIME / "lab" / role / ("ops-" + role + ".log")).write_text("private loopback completion fixture\n")
         recording = Recording()
         evidence = demonstrate(recording)
         after = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in source_files}
@@ -292,7 +364,8 @@ def main():
             evidence["duration_seconds"] = round(time.monotonic() - recording.started, 3)
             recording.close()
         subprocess.run(["python3", str(ROOT / "tools/lab.py"), "stop"], check=True)
-        (ROOT / "docs/demo-results.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n")
+        (OUTPUT_ROOT / "docs").mkdir(parents=True, exist_ok=True)
+        (OUTPUT_ROOT / "docs/demo-results.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

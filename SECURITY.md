@@ -10,9 +10,19 @@ Worker requests and run history use private storage. Worker startup configuratio
 is trusted executable Lisp supplied explicitly by the operator.
 Requests contain expanded code and parameters while a job runs. Normal completion,
 cancellation and timeout remove them; an abrupt editor/OS crash may leave private
-request files in the run directory. Inspect retention after a crash. Babel output
+request files below `multihost-state-directory`. Inspect retention after a crash. Babel output
 is buffered until completion; the 64 MiB protocol limit is not a streaming memory
 limit on the child interpreter.
+
+Retained workers preserve authenticated TRAMP shells until idle expiry or explicit
+closure. Connection identity includes the full TRAMP prefix and trusted startup
+configuration; working directories remain request-specific. Batch authentication
+prompts fail explicitly and are not consumed as RPC input.
+
+Remote completion is an explicit opt-in. Queries execute a fixed Bash program with
+literal prefix arguments, never the text being edited. Candidate and output limits
+bound responses, and cached candidates stay in memory in the editing buffer.
+Completion does not evaluate Org header Lisp or imply approval to run the block.
 
 Org approval occurs before expansion of variables and noweb references. As with
 ordinary Babel, approving a block also approves its dependencies. Preview does not

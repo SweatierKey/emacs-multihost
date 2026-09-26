@@ -10,10 +10,17 @@ Babel backends through TRAMP. There is no remote agent and no password database.
    parameters, expands the source once, and submits the resolved plan.
 3. `multihost-engine.el` owns scheduling, state transitions, time limits,
    cancellation, retries and private run history.
-4. `multihost-worker.el` invokes Babel with a remote directory and records actual
+4. `multihost-connection.el` owns the globally bounded pool, connection identities,
+   FIFO request queues, private RPC files, idle eviction and worker lifetimes.
+5. `multihost-worker.el` invokes Babel with a remote directory and records actual
    command status. Worker exit status and remote command exit status are distinct.
-5. `multihost.el` presents the run list, per-host dashboard, individual results,
-   combined results, grouped results and exports.
+6. `multihost.el` presents the run list, per-host dashboard, individual results,
+   combined results, grouped results and exports. `multihost-connections-ui.el`
+   displays retained connections and explicit asynchronous initialization.
+7. `multihost-compgen.el` runs bounded, fixed Bash queries in the worker.
+   `multihost-completion.el` supplies cached CAPF candidates, host annotations,
+   debounce and stale-response handling in the editor. Org supplies a literal,
+   non-evaluating context resolver for both the runbook and its source edit buffer.
 
 ## Execution contract
 
@@ -23,7 +30,12 @@ observed; jobs already running may finish. Retrying failures creates a new run a
 does not rewrite the old result. Cancellation stops local workers and queued work.
 It does not prove a detached remote process has stopped.
 
-The background timeout covers authentication, connection setup and execution.
+The background timeout covers pool queue waiting, authentication, connection
+setup and execution. An active timeout or cancellation retires the worker; normal
+completion keeps its TRAMP connection for subsequent jobs and completion queries.
+Different working directories share a connection, but Babel sessions remain
+isolated. Global pool capacity and per-run concurrency both constrain scheduling.
+Interrupted requests are never replayed automatically.
 Background workers require authentication that works without a minibuffer.
 The explicit foreground path uses the current Emacs/TRAMP environment for
 interactive authentication and serial execution. Its interaction and timeout
@@ -45,3 +57,6 @@ Remote interactive terminals and file editing use the ordinary Emacs/TRAMP tools
 Run records are local operational history, not tamper-proof compliance evidence.
 Commands and output may contain confidential information. Runtime storage uses
 private directories and files; nothing is uploaded automatically.
+
+See [the connection and completion contract](connections-and-completion.md) for
+identity, authentication, cache limits and the boundaries of editor responsiveness.

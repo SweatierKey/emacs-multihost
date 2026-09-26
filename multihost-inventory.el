@@ -3,7 +3,7 @@
 ;; Copyright (C) 2026 Multihost contributors
 ;; Author: Multihost contributors
 ;; URL: https://github.com/SweatierKey/emacs-multihost
-;; Version: 1.0.0
+;; Version: 1.1.0
 ;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: processes, tools
 ;; SPDX-License-Identifier: GPL-3.0-or-later

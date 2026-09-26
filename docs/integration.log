@@ -1,33 +1,42 @@
 EMACS=emacs bash tools/test-integration.sh
 SSH lab ready: web=127.0.0.1:22261, db=127.0.0.1:22262 (/home/admin/emacs-multihost/.runtime/lab)
-Running 13 tests (2026-09-26 16:53:29+0200, selector ‘t’)
-   passed   1/13  multihost-integration-cancel-without-queued-execution (0.203967 sec)
-   passed   2/13  multihost-integration-exit-code-and-output (2.261443 sec)
-   passed   3/13  multihost-integration-explicit-user-port-cwd-no-local-fallback (2.261576 sec)
-   passed   4/13  multihost-integration-fail-fast-skips-queued-host (2.231882 sec)
-   passed   5/13  multihost-integration-invalid-directory-fails-remotely (2.352597 sec)
-Remote overlap 1.155s; parent timer ticks 80
-   passed   6/13  multihost-integration-parallel-overlap-and-responsive-parent (3.196625 sec)
-   passed   7/13  multihost-integration-python-backend-runs-remotely (2.382416 sec)
-   passed   8/13  multihost-integration-retry-failed-only (4.283556 sec)
-Serial remote order db -> web; gap 2.242s
-   passed   9/13  multihost-integration-serial-preserves-selection-order (6.901832 sec)
-   passed  10/13  multihost-integration-timeout-without-queued-execution (1.507913 sec)
+Running 20 tests (2026-09-26 18:14:14+0200, selector ‘t’)
+   passed   1/20  multihost-connection-integration-cancel-active-and-queued-without-replay (4.491165 sec)
+   passed   2/20  multihost-connection-integration-compgen-host-specific-files-programs (1.452931 sec)
+   passed   3/20  multihost-connection-integration-compgen-missing-bash-is-explicit-error (1.079971 sec)
+   passed   4/20  multihost-connection-integration-denied-auth-does-not-block-healthy-host (1.989367 sec)
+Persistent worker 94835: cold 2.237s, reused 0.669s (no speed threshold)
+   passed   5/20  multihost-connection-integration-reuses-worker-ssh-and-changes-cwd (2.938411 sec)
+   passed   6/20  multihost-connection-integration-single-connection-serializes-requests (3.318523 sec)
+SSH init sleep 1.202s: 61 parent ticks during delay, max observed gap 0.0201s
+   passed   7/20  multihost-connection-integration-slow-authentication-delivers-parent-timers (1.894110 sec)
+   passed   8/20  multihost-integration-cancel-without-queued-execution (0.148967 sec)
+   passed   9/20  multihost-integration-exit-code-and-output (2.222695 sec)
+   passed  10/20  multihost-integration-explicit-user-port-cwd-no-local-fallback (2.286912 sec)
+   passed  11/20  multihost-integration-fail-fast-skips-queued-host (2.290674 sec)
+   passed  12/20  multihost-integration-invalid-directory-fails-remotely (2.195168 sec)
+Remote overlap 1.138s; parent timer ticks 83
+   passed  13/20  multihost-integration-parallel-overlap-and-responsive-parent (3.282723 sec)
+   passed  14/20  multihost-integration-python-backend-runs-remotely (2.439553 sec)
+   passed  15/20  multihost-integration-retry-failed-only (2.744007 sec)
+Serial remote order db -> web; gap 2.251s
+   passed  16/20  multihost-integration-serial-preserves-selection-order (6.922684 sec)
+   passed  17/20  multihost-integration-timeout-without-queued-execution (1.503107 sec)
 Could not read ‘org-id-locations’ from ~/emacs-multihost/.runtime/lab/emacs/.org-id-locations, setting it to nil
-Multihost 20260926T165357-x7iYF7: running
-Multihost 20260926T165357-x7iYF7: finished
+Multihost 20260926T181458-gZaw6l: running
+Multihost 20260926T181458-gZaw6l: finished
 Org result event observed: polls=1 state=finished inserted=t
-   passed  11/13  multihost-org-integration-background-vars-noweb-and-final-results (2.670949 sec)
+   passed  18/20  multihost-org-integration-background-vars-noweb-and-final-results (2.718121 sec)
 Multihost foreground: web
 Babel evaluation exited with code 7
 Multihost foreground: db
-Multihost 20260926T165359-qBaAWh: failed
-   passed  12/13  multihost-org-integration-foreground-failure-keeps-per-host-status (2.855402 sec)
+Multihost 20260926T181500-5CajdI: failed
+   passed  19/20  multihost-org-integration-foreground-failure-keeps-per-host-status (2.969596 sec)
 Multihost foreground: db
 Multihost foreground: web
-Multihost 20260926T165402-s41ZWh: succeeded
+Multihost 20260926T181503-4aF1l6: succeeded
 Org result event observed: polls=1 state=succeeded inserted=t
-   passed  13/13  multihost-org-integration-foreground-real-ssh-two-hosts (1.506965 sec)
+   passed  20/20  multihost-org-integration-foreground-real-ssh-two-hosts (1.516194 sec)
 
-Ran 13 tests, 13 results as expected, 0 unexpected (2026-09-26 16:54:03+0200, 34.618067 sec)
+Ran 20 tests, 20 results as expected, 0 unexpected (2026-09-26 18:15:04+0200, 50.406291 sec)
 

@@ -1,15 +1,23 @@
 {
-  "started_utc": "2026-09-26T14:53:24Z",
+  "started_utc": "2026-09-26T16:14:03Z",
   "emacs": "GNU Emacs 30.1",
   "source_sha256": {
-    "multihost-engine.el": "d11d440d1ffcc6b511dce6646c038e2591ad55625722ef04d862a2c5d1719b56",
-    "multihost-inventory.el": "0ac091e4256a68f1d243d9bb94a05880d4799526ea234edada3c69f9e16e9059",
-    "multihost-worker.el": "6fd38c17f3cd6bc6ff0fe5c2e2c557a94ddc60fadb3592a00306b542c2d29537",
-    "multihost.el": "96460da41eb80abbb607c103349f153efc6830ddba29fcf3f4c519eb2ec452a4",
-    "ob-multihost.el": "cba418ed253205d9f06fc3fa231bfd10bd5d51598299d841ac50676fd3d61e90",
+    "multihost-compgen.el": "cb6f61941f6cc1dbae43278374268074325c61bcadd55137a5f11a7a8bc72d07",
+    "multihost-completion.el": "ed1926c31615c898ee6bd4ece8c099d2c756fbdb6ba80e07648dca02e916ff99",
+    "multihost-connection.el": "ccbc4842e04512bfd436807d0bb738dd950a5ab0bf92f227675494268bae6042",
+    "multihost-connections-ui.el": "2070f91a40d1e1bb83c50b811e5ebb80dc675df6dae58aaa1ef4390a00811030",
+    "multihost-engine.el": "c4981833e9b0db07c04b68c009bee632c3b076778f8fee2745d0adcd53a7b99f",
+    "multihost-inventory.el": "e819770f9358b64ce58349e463a9cea84ed502feb89ed426dc700889621a0fdf",
+    "multihost-worker.el": "0a10848f346ec09694e0f9e0ee8940c84a020142f42a6c3f7032256078e3e8c0",
+    "multihost.el": "ab45ed0464052cdff6b0b26966fd4731d38e82aada6c53c9d81f0c6f23238e53",
+    "ob-multihost.el": "bfecf614622df3906f3f523f8dd8347833118dfa9dced5ea863e2a57169be50f",
     "test/multihost-boundary-test.el": "5ff98f93949a456bcd1f9c9acb974ed1d7766ac9a2ec6eb121c916b83358fca9",
-    "test/multihost-engine-test.el": "221f6ab4e3549bcdea134b7461a9704444794641349b530efb7a9b6c49f3d748",
-    "test/multihost-integration-test.el": "c054cf84ea086d02399ccdfe56e2149f1f021106203f6e13c007395824d69e5d",
+    "test/multihost-completion-test.el": "799f98f440aac4d2c2620094911a11b1fc5f2d2b991d052a95ef78d7dfdd6d00",
+    "test/multihost-connection-integration-test.el": "f2a9888f68c9143600fdcff1ab16726215897efb5885001393443da20a64ee90",
+    "test/multihost-connection-test.el": "cc82200c3350c4b6149e5cc28323d420bc3eb35b0861c5cc769f9cf21e8d59b9",
+    "test/multihost-editor-test.el": "6cb79dcf7ee4660bb879e2b4e1b039bf4bfc0cb8a2c78e88df6a74ec66f82be6",
+    "test/multihost-engine-test.el": "36cb208ecc5e4e389bc48104077b84b585abba3ea8a8a622affa6e348f2ddf05",
+    "test/multihost-integration-test.el": "9f7e12d2ba83d9d1520a39f65eb3d356033859ca9de850193095f0430e61a228",
     "test/multihost-inventory-test.el": "9dceea17cd737244efa2f608296b6a6d3c17b584dd6f7eab86edf91054d066b3",
     "test/multihost-org-integration-test.el": "ccf16a91311af4e3b65a658ccf835daf70380144c57c03197616177405ea05d6",
     "test/multihost-ui-test.el": "741e1c7fe05e0f9245db5f135460d039c2d045dfab9a216c7b439932bf638532",
@@ -17,7 +25,7 @@
     "test/ob-multihost-test.el": "d6ced50d7826b49fc4cb41a5ce29ba70c89ecccfda9e97057603b5e2dc1d9fa3",
     "test/run-tests.el": "49c2cfa40eb3c6809bfeb8d0afd12ff3258a546032742b5330af60b63dd82923",
     "tools/lab.py": "fff33d05d5d00c47c04a0012ec06295d465e78b0c934ae8b3a7967b07dd86b76",
-    "tools/test-integration.sh": "e5355ee32c2b73d7376fa58ddbe44c4a665d354481b1d34c8e9fd6f666930c24"
+    "tools/test-integration.sh": "c1fb05e3b990aa0aedca50bf62b64c0d52888d34a20e34a62ee4796b2b9de850"
   },
   "checks": [
     {
@@ -26,15 +34,15 @@
         "check"
       ],
       "returncode": 0,
-      "elapsed_seconds": 3.118,
+      "elapsed_seconds": 9.6,
       "ert_summaries": [
         {
-          "total": 77,
-          "expected": 77,
+          "total": 128,
+          "expected": 128,
           "unexpected": 0
         }
       ],
-      "log_sha256": "5934cbd1098600eaa4349e67011f8457d903a3ba40472e6ffe8bb80854b49e64"
+      "log_sha256": "95fa81c552b88a99caac0affa4b55359b06218852efd54b6a43d1575d283aeff"
     },
     {
       "command": [
@@ -42,15 +50,15 @@
         "integration"
       ],
       "returncode": 0,
-      "elapsed_seconds": 36.292,
+      "elapsed_seconds": 52.074,
       "ert_summaries": [
         {
-          "total": 13,
-          "expected": 13,
+          "total": 20,
+          "expected": 20,
           "unexpected": 0
         }
       ],
-      "log_sha256": "cb52703d711b018ea8c11a305e722870778cf730f76ecee405fa3adfc046442c"
+      "log_sha256": "9f2611aa4746836c2adf790420c34b4fe25f8071ecdd0e093ae95a78fb78e958"
     }
   ],
   "status": "passed"

@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2026 Multihost contributors
 ;; Author: Multihost contributors
-;; Version: 1.0.0
+;; Version: 1.1.0
 ;; Package-Requires: ((emacs "29.1") (org "9.6"))
 ;; Keywords: tools, processes, literate programming
 ;; URL: https://github.com/SweatierKey/emacs-multihost
@@ -21,10 +21,17 @@
 (require 'ob-python)
 (require 'multihost)
 
+(declare-function multihost-completion-setup "multihost-completion" (context-function &optional enabled))
+(declare-function multihost-completion-refresh "multihost-completion" ())
+(declare-function multihost-completion-disable "multihost-completion" ())
+
 (defvar-local ob-multihost--owners nil)
 (defvar-local ob-multihost-last-run nil)
 (defvar ob-multihost--inside nil)
 (defvar ob-multihost--force-foreground nil)
+(defvar-local ob-multihost-completion-enabled nil
+  "Whether the operator enabled remote completion for this buffer.")
+(defvar-local ob-multihost--completion-cache nil)
 (defconst ob-multihost--headers
   '(:hosts :exclude :renderer :concurrency :timeout :fail-fast :execution))
 
@@ -271,6 +278,82 @@ deadline; C-g interrupts.  Remote termination still depends on transport."
             (multihost-org-execute info))
         (apply original args)))))
 
+(defun ob-multihost--completion-info ()
+  "Read unevaluated source headers in Org or its current source edit buffer."
+  (cond
+   ((org-src-edit-buffer-p)
+    (let ((marker org-src--beg-marker))
+      (unless (and (markerp marker) (marker-buffer marker))
+        (user-error "The source runbook is no longer available"))
+      (with-current-buffer (marker-buffer marker)
+        (save-excursion
+          (goto-char marker)
+          (org-babel-get-src-block-info 'no-eval)))))
+   ((derived-mode-p 'org-mode) (org-babel-get-src-block-info 'no-eval))
+   (t (user-error "Use completion inside an Org shell block or its C-c ' edit buffer"))))
+
+(defun ob-multihost--completion-context ()
+  "Resolve literal shell block targets without evaluating source or connecting.
+Keep the editor's own directory unchanged.  Cache validated inventory contents
+until routing headers or the local inventory's modification metadata change."
+  (let* ((info (ob-multihost--completion-info))
+         (params (nth 2 info))
+         (hostspec (cdr (assq :hosts params)))
+         (exclude (cdr (assq :exclude params)))
+         (directory (cdr (assq :dir params)))
+         (inventory-file (and multihost-inventory-file
+                              (expand-file-name multihost-inventory-file))))
+    (unless (and info (member (car info) '("sh" "bash" "shell")) hostspec)
+      (user-error "Remote completion requires a shell source block with literal :hosts"))
+    (when (and inventory-file (file-remote-p inventory-file))
+      (user-error "Completion inventories must be local files"))
+    (when (and directory (not (stringp directory)))
+      (user-error ":dir must be a literal directory"))
+    (let* ((attributes (and inventory-file (file-attributes inventory-file)))
+           (key (list (car info) hostspec exclude directory inventory-file
+                      (and attributes (file-attribute-modification-time attributes))
+                      (and attributes (file-attribute-size attributes))))
+           (cached ob-multihost--completion-cache))
+      (unless (equal key (car cached))
+        (let ((hosts (multihost-select-hosts
+                      hostspec (and inventory-file (multihost-inventory-load inventory-file)) exclude)))
+          (setq cached
+                (cons key (mapcar (lambda (host)
+                                   (cons (multihost-host-name host)
+                                         (multihost-host-directory host directory))) hosts))
+                ob-multihost--completion-cache cached)))
+      (cdr cached))))
+
+;;;###autoload
+(defun multihost-org-completion-enable ()
+  "Enable asynchronous remote completion for this Org shell editing buffer.
+Use the literal :hosts and :dir headers, with no evaluation of the block.
+This explicit command requests remote candidates; later M-TAB calls use the
+cache and schedule debounced refreshes.  Candidate annotations show host scope."
+  (interactive)
+  (ob-multihost--completion-context)
+  (require 'multihost-completion)
+  (multihost-completion-setup #'ob-multihost--completion-context t)
+  (setq-local ob-multihost-completion-enabled t)
+  (multihost-completion-refresh))
+
+;;;###autoload
+(defun multihost-org-completion-disable ()
+  "Stop remote completion and its pending requests in this buffer."
+  (interactive)
+  (setq ob-multihost-completion-enabled nil
+        ob-multihost--completion-cache nil)
+  (when (featurep 'multihost-completion) (multihost-completion-disable)))
+
+(defun ob-multihost--completion-edit-buffer ()
+  "Inherit explicit completion opt-in when opening a source edit buffer.
+Setting up the CAPF does not initiate remote traffic."
+  (when (and (org-src-edit-buffer-p)
+             (buffer-local-value 'ob-multihost-completion-enabled (org-src-source-buffer)))
+    (require 'multihost-completion)
+    (setq-local ob-multihost-completion-enabled t)
+    (multihost-completion-setup #'ob-multihost--completion-context t)))
+
 ;;;###autoload
 (define-minor-mode ob-multihost-mode
   "Enable :hosts on supported Org Babel blocks globally.
@@ -278,8 +361,11 @@ Blocks without :hosts retain normal Org behavior.  Execution during
 export is rejected; run the block explicitly before exporting results."
   :global t :group 'multihost
   (if ob-multihost-mode
-      (advice-add 'org-babel-execute-src-block :around #'ob-multihost--around)
-    (advice-remove 'org-babel-execute-src-block #'ob-multihost--around)))
+      (progn
+        (advice-add 'org-babel-execute-src-block :around #'ob-multihost--around)
+        (add-hook 'org-src-mode-hook #'ob-multihost--completion-edit-buffer))
+    (advice-remove 'org-babel-execute-src-block #'ob-multihost--around)
+    (remove-hook 'org-src-mode-hook #'ob-multihost--completion-edit-buffer)))
 
 (provide 'ob-multihost)
 ;;; ob-multihost.el ends here

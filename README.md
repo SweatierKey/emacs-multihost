@@ -3,7 +3,7 @@
 **Run one operation across a deliberate set of Linux hosts. Keep the plan, the code and the results in Emacs.**
 
 Multihost brings ordered inventories, bounded parallel execution, per-host results
-and repeatable Org runbooks to Emacs. It uses Org Babel and TRAMP with your existing
+repeatable Org runbooks and remote command/file completion to Emacs. It uses Org Babel and TRAMP with your existing
 SSH configuration. No agent is installed on the target hosts.
 
 [Watch the recorded workflow](https://sweatierkey.github.io/emacs-multihost/)
@@ -72,6 +72,8 @@ Run `M-x multihost` to browse the inventory:
 | `s` | Open an ordinary interactive remote shell |
 | `d` | Browse remote files with Dired/TRAMP |
 | `v` | Check remote identity and directory using interactive TRAMP |
+| `w` | Prepare selected connections asynchronously and retain them |
+| `C` | Inspect retained connections; `k` there closes one connection |
 | `g` | Reload the inventory |
 | `h` | Open run history |
 
@@ -94,7 +96,7 @@ Ordinary blocks without `:hosts` retain their normal Babel behavior.
 | `:exclude web-02` | Additional exclusions |
 | `:dir /srv/app` | Override the remote working directory, preserving routing |
 | `:concurrency 4` | Maximum active background jobs; default 4 |
-| `:timeout 60` | Per-job deadline including connection setup; default 60 seconds |
+| `:timeout 60` | Per-job deadline including pool waiting and connection setup; default 60 seconds |
 | `:fail-fast yes` | Skip jobs still queued after a failure; already running jobs finish |
 | `:renderer digest` | `digest`, `per-host`, `table`, or `combined` |
 | `:execution foreground` | Serial execution in this Emacs, with interactive authentication |
@@ -114,10 +116,33 @@ its source block explicitly. Backends that run in the local editor, including Em
 are rejected. Code evaluation during export is rejected: run the block explicitly
 and then export its stored results. See [example runbooks](examples/operations.org).
 
+## Retained connections and remote completion
+
+Background jobs now reuse persistent Emacs workers and their TRAMP connections.
+Connection setup, remote execution and completion queries run outside the main
+editor. `w` prepares selected hosts; `C` shows worker state and completed requests.
+`multihost-connection-limit` bounds the whole pool (default four), with one active
+request per connection. Idle workers expire after 300 seconds by default. Changes
+to the working directory do not require a new connection.
+
+In the body of an Org shell block with `:hosts`, place point after a command or
+filename prefix and run `M-x multihost-org-completion-enable`. Use `M-TAB` for
+cached remote suggestions. A missing prefix is fetched asynchronously; invoke
+completion again once replies arrive. `C-c '` source editing inherits this opt-in.
+Suggestions show which hosts supplied them. Choose `union` or `intersection` with
+`multihost-completion-policy`; incomplete responses cannot produce an intersection.
+
+This uses remote Bash `compgen` for simple command names and filenames. It requires
+Bash on the target and does not implement option-specific `bash-completion` or
+load interactive shell startup files. Completion is off until explicitly enabled.
+Foreground commands and ordinary TRAMP file browsing retain their synchronous
+behavior. See [connection controls, completion and measurements](docs/connections-and-completion.md).
+
 ## Results, failures and history
 
 The dashboard shows queued, running, succeeded, failed, timed-out, skipped and
-cancelled jobs. Results include the process exit code, stdout, stderr and duration.
+cancelled jobs. `waiting-pool` distinguishes work awaiting a shared connection
+slot from work already assigned to a worker. Results include the process exit code, stdout, stderr and duration.
 A failed shell command is not considered successful merely because Babel returned
 a string. A worker result larger than 64 MiB is rejected as a protocol failure;
 design checks to return bounded summaries instead of bulk data dumps.
@@ -156,7 +181,7 @@ automatically.
 
 For normal background work, workers need authentication that works without an
 interactive minibuffer: for example an already authorized SSH agent. Workers use
-isolated `emacs -Q` processes and do not load your entire personal init file. Use
+persistent, isolated `emacs -Q` processes and do not load your entire personal init file. Use
 `multihost-worker-init-file` for a small, trusted configuration file when custom
 TRAMP or Babel settings are needed.
 
@@ -168,7 +193,7 @@ overrides background concurrency/deadline settings; the header form rejects
 conflicting settings.
 
 PSMP is accessed through an organization-approved SSH alias. Multihost does not
-change CyberArk policy or enable ControlMaster automatically. A successful
+change CyberArk policy or enable ControlMaster automatically. The pool reuses each worker's TRAMP shell; it does not need to add SSH connection sharing. A successful
 foreground login does not prove that background workers can reuse it.
 **No live CyberArk deployment has been certified by the local SSH tests.**
 [PSMP setup, official references and deployment acceptance checks](docs/psmp.md)
@@ -188,9 +213,8 @@ The two endpoints share a kernel. They test scheduling and transport behavior,
 not WAN performance or CyberArk recording. See [testing](docs/testing.md),
 [architecture](docs/architecture.md) and [contributing](CONTRIBUTING.md).
 
-The recorded release checks passed **77 unit tests and 13 real-SSH integration
-tests** on Emacs 30.1. [Validation data](docs/validation.json) includes source and
-log hashes; [GitHub Actions](https://github.com/SweatierKey/emacs-multihost/actions)
+The release passed **128 unit tests and 20 real-SSH integration tests** on
+Emacs 30.1. [Recorded validation](docs/validation.json) includes source and log hashes; [GitHub Actions](https://github.com/SweatierKey/emacs-multihost/actions)
 runs the suite on Ubuntu 24.04 and Debian 13.
 
 ## License and origin

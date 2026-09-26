@@ -23,6 +23,7 @@
         multihost-default-timeout 20
         multihost-default-concurrency 2
         org-confirm-babel-evaluate t
+        org-src-preserve-indentation t
         org-startup-folded 'showall
         inhibit-startup-screen t
         ring-bell-function #'ignore

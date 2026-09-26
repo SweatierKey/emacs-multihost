@@ -8,8 +8,11 @@ The test layers exercise different boundaries:
 2. **Real SSH integration** starts two private loopback SSH endpoints and executes
    actual Org Babel blocks over TRAMP. It measures overlapping execution and
    ordered serial execution, and tests command failures, retry, timeout and cancel.
+   Pool tests verify actual SSH connection reuse, initialization responsiveness,
+   failure isolation and command/file completion on different target directories.
 3. **Interactive recording** uses real key input in a terminal Emacs with Vertico
-   and Marginalia enabled. It shows the inventory, dashboard and result views.
+   and Marginalia enabled. It shows connection preparation, remote completion,
+   the inventory, dashboard and result views.
 
 ## Unit tests
 
@@ -69,9 +72,8 @@ summaries, and hashes the source files and logs. It writes `check.log` and
 `integration.log` beside the JSON report. `--unit-only` is available for a shorter
 development check; it does not establish that SSH integration passed.
 
-The recorded 1.0.0 [validation report](validation.json) contains **77 passing unit
-tests and 13 passing real-SSH integration tests**, with the Emacs version and
-source hashes used for those runs.
+The 1.1.0 [validation report](validation.json) records **128 passing unit tests
+and 20 passing real-SSH integration tests**, the Emacs version and source hashes.
 
 Run validation again after changing the executable source. The recorded demo
 also contains source hashes in `docs/demo-results.json`, so its relationship to
@@ -88,17 +90,17 @@ symlinks, even if they were accidentally tracked.
 
 ```sh
 git status --short
-python3 tools/package.py --version 1.0.0
+python3 tools/package.py --version 1.1.0
 ```
 
-This creates `dist/emacs-multihost-1.0.0.tar.gz` and its `.sha256` companion. An
+This creates `dist/emacs-multihost-1.1.0.tar.gz` and its `.sha256` companion. An
 existing archive is not overwritten. The archive includes a `SHA256SUMS` manifest
 and uses fixed timestamps; the same reviewed contents and file modes produce the
 same archive. To check an extracted release:
 
 ```sh
-tar -xzf dist/emacs-multihost-1.0.0.tar.gz
-cd emacs-multihost-1.0.0
+tar -xzf dist/emacs-multihost-1.1.0.tar.gz
+cd emacs-multihost-1.1.0
 sha256sum -c SHA256SUMS
 make check
 ```
@@ -112,3 +114,15 @@ The tests do not pretend to implement CyberArk PSMP. SSH aliases and TRAMP routi
 are tested; MFA, credential policies, command restrictions, recording, ticketing
 and audit need acceptance tests in a real authorized deployment. The checklist
 and official references are in [psmp.md](psmp.md).
+
+## Connection measurements
+
+```sh
+python3 tools/benchmark-connections.py --label persistent-pool
+```
+
+This runs sequential repeated calls, a synchronous parent-side TRAMP reference,
+and deliberately delayed initialization. Results include process/SSH identities
+and timer gaps rather than an arbitrary performance threshold. See
+[measurement details](connections-and-completion.md#evidence-and-reproduction).
+Run it separately from integration tests and recording: they share lab ports.

@@ -1,311 +1,461 @@
 [
   {
-    "at": 5.0175,
+    "at": 5.0186,
     "keys": "M-x",
     "input_hex": "1b78"
   },
   {
-    "at": 5.3178,
+    "at": 5.3187,
     "keys": "multihost",
     "input_hex": "6d756c7469686f7374"
   },
   {
-    "at": 5.9679,
+    "at": 5.9689,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 6.5181,
+    "at": 6.5191,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 6.8705,
+    "at": 6.8716,
     "keys": "T \u2014 mark every inventory host",
     "input_hex": "54"
   },
   {
-    "at": 7.5721,
+    "at": 7.5737,
+    "keys": "w \u2014 initialize both connections asynchronously",
+    "input_hex": "77"
+  },
+  {
+    "at": 8.0739,
+    "keys": "C-x 1",
+    "input_hex": "1831"
+  },
+  {
+    "at": 9.1266,
+    "keys": "C-x b",
+    "input_hex": "1862"
+  },
+  {
+    "at": 9.4767,
+    "keys": "buffer: *Multihost inventory*",
+    "input_hex": "2a4d756c7469686f737420696e76656e746f72792a"
+  },
+  {
+    "at": 9.7768,
+    "keys": "RET",
+    "input_hex": "0d"
+  },
+  {
+    "at": 10.077,
+    "keys": "C-x 1",
+    "input_hex": "1831"
+  },
+  {
+    "at": 10.5772,
+    "keys": "C \u2014 inspect retained connection workers",
+    "input_hex": "43"
+  },
+  {
+    "at": 11.0773,
+    "keys": "C-x 1",
+    "input_hex": "1831"
+  },
+  {
+    "at": 12.1302,
+    "keys": "C-x b",
+    "input_hex": "1862"
+  },
+  {
+    "at": 12.4804,
+    "keys": "buffer: *Multihost inventory*",
+    "input_hex": "2a4d756c7469686f737420696e76656e746f72792a"
+  },
+  {
+    "at": 12.7806,
+    "keys": "RET",
+    "input_hex": "0d"
+  },
+  {
+    "at": 13.0808,
+    "keys": "C-x 1",
+    "input_hex": "1831"
+  },
+  {
+    "at": 13.581,
     "keys": "x \u2014 run command",
     "input_hex": "78"
   },
   {
-    "at": 7.9722,
+    "at": 13.9812,
     "keys": "cat status.txt",
     "input_hex": "636174207374617475732e747874"
   },
   {
-    "at": 8.5724,
+    "at": 14.5813,
     "keys": "RET \u2014 execute on marked hosts",
     "input_hex": "0d"
   },
   {
-    "at": 8.8726,
+    "at": 14.8815,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 12.2391,
+    "at": 17.5184,
     "keys": "M-<",
     "input_hex": "1b3c"
   },
   {
-    "at": 12.5893,
+    "at": 17.8686,
     "keys": "RET \u2014 separate host output",
     "input_hex": "0d"
   },
   {
-    "at": 13.0895,
+    "at": 18.3687,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 14.4415,
+    "at": 19.7209,
     "keys": "C-x b",
     "input_hex": "1862"
   },
   {
-    "at": 14.7917,
-    "keys": "buffer: *Multihost 20260926T163856-PwtKlr*",
-    "input_hex": "2a4d756c7469686f7374203230323630393236543136333835362d5077744b6c722a"
+    "at": 20.071,
+    "keys": "buffer: *Multihost 20260926T181209-YATHwB*",
+    "input_hex": "2a4d756c7469686f7374203230323630393236543138313230392d5941544877422a"
   },
   {
-    "at": 15.0919,
+    "at": 20.3712,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 15.3921,
+    "at": 20.6714,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 15.8922,
+    "at": 21.1716,
     "keys": "a \u2014 combined output",
     "input_hex": "61"
   },
   {
-    "at": 16.3924,
+    "at": 21.6718,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 17.7449,
+    "at": 23.024,
     "keys": "C-x b",
     "input_hex": "1862"
   },
   {
-    "at": 18.095,
-    "keys": "buffer: *Multihost 20260926T163856-PwtKlr*",
-    "input_hex": "2a4d756c7469686f7374203230323630393236543136333835362d5077744b6c722a"
+    "at": 23.3741,
+    "keys": "buffer: *Multihost 20260926T181209-YATHwB*",
+    "input_hex": "2a4d756c7469686f7374203230323630393236543138313230392d5941544877422a"
   },
   {
-    "at": 18.3952,
+    "at": 23.6743,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 18.6953,
+    "at": 23.9745,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 19.1955,
+    "at": 24.4747,
     "keys": "d \u2014 digest",
     "input_hex": "64"
   },
   {
-    "at": 19.6957,
+    "at": 24.9748,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 20.0474,
+    "at": 25.327,
     "keys": "C-x C-f \u2014 open the Org runbook",
     "input_hex": "1806"
   },
   {
-    "at": 20.3976,
+    "at": 25.6773,
     "keys": "runbook.org",
     "input_hex": "2f686f6d652f61646d696e2f656d6163732d6d756c7469686f73742f2e72756e74696d652f64656d6f2f72756e626f6f6b2e6f7267"
   },
   {
-    "at": 20.7978,
+    "at": 26.0775,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 21.298,
+    "at": 26.5777,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 21.6481,
+    "at": 26.9278,
     "keys": "M-<",
     "input_hex": "1b3c"
   },
   {
-    "at": 22.0005,
+    "at": 27.2802,
     "keys": "C-s",
     "input_hex": "13"
   },
   {
-    "at": 22.2007,
+    "at": 27.4803,
+    "keys": "search: cat status.txt",
+    "input_hex": "636174207374617475732e747874"
+  },
+  {
+    "at": 27.6805,
+    "keys": "RET",
+    "input_hex": "0d"
+  },
+  {
+    "at": 27.8806,
+    "keys": "C-a C-k \u2014 temporarily edit the command line",
+    "input_hex": "010b"
+  },
+  {
+    "at": 28.0808,
+    "keys": "cat ops- \u2014 remote filename prefix",
+    "input_hex": "636174206f70732d"
+  },
+  {
+    "at": 28.3309,
+    "keys": "M-x",
+    "input_hex": "1b78"
+  },
+  {
+    "at": 28.6311,
+    "keys": "multihost-org-completion-enable",
+    "input_hex": "6d756c7469686f73742d6f72672d636f6d706c6574696f6e2d656e61626c65"
+  },
+  {
+    "at": 29.2813,
+    "keys": "RET",
+    "input_hex": "0d"
+  },
+  {
+    "at": 29.8333,
+    "keys": "M-TAB \u2014 complete files from both hosts",
+    "input_hex": "1b09"
+  },
+  {
+    "at": 31.6365,
+    "keys": "C-c ' \u2014 edit the shell block",
+    "input_hex": "0327"
+  },
+  {
+    "at": 32.2366,
+    "keys": "C-x 1",
+    "input_hex": "1831"
+  },
+  {
+    "at": 32.4886,
+    "keys": "M-TAB \u2014 request remote candidates in source editor",
+    "input_hex": "1b09"
+  },
+  {
+    "at": 32.9906,
+    "keys": "M-TAB \u2014 display cached annotated candidates",
+    "input_hex": "1b09"
+  },
+  {
+    "at": 34.4939,
+    "keys": "C-c ' \u2014 return to Org",
+    "input_hex": "0327"
+  },
+  {
+    "at": 34.994,
+    "keys": "C-x 1",
+    "input_hex": "1831"
+  },
+  {
+    "at": 35.1942,
+    "keys": "C-a C-k \u2014 restore the original check",
+    "input_hex": "010b"
+  },
+  {
+    "at": 35.3944,
+    "keys": "cat status.txt",
+    "input_hex": "636174207374617475732e747874"
+  },
+  {
+    "at": 35.6959,
+    "keys": "M-<",
+    "input_hex": "1b3c"
+  },
+  {
+    "at": 36.0461,
+    "keys": "C-s",
+    "input_hex": "13"
+  },
+  {
+    "at": 36.2463,
     "keys": "search: #+begin_src sh",
     "input_hex": "232b626567696e5f737263207368"
   },
   {
-    "at": 22.4008,
+    "at": 36.4465,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 22.601,
+    "at": 36.6466,
     "keys": "C-a",
     "input_hex": "01"
   },
   {
-    "at": 22.8012,
+    "at": 36.8468,
     "keys": "C-c C-c",
     "input_hex": "0303"
   },
   {
-    "at": 23.4033,
+    "at": 37.4487,
     "keys": "Org execution approval: yes",
     "input_hex": "796573"
   },
   {
-    "at": 23.6535,
+    "at": 37.6989,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 24.0537,
+    "at": 38.0991,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 30.9003,
+    "at": 41.6936,
     "keys": "C-x b",
     "input_hex": "1862"
   },
   {
-    "at": 31.2505,
+    "at": 42.0438,
     "keys": "buffer: runbook.org",
     "input_hex": "72756e626f6f6b2e6f7267"
   },
   {
-    "at": 31.5507,
+    "at": 42.344,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 31.8508,
+    "at": 42.6442,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 32.3509,
+    "at": 43.1443,
     "keys": "M-<",
     "input_hex": "1b3c"
   },
   {
-    "at": 33.7029,
+    "at": 44.4968,
     "keys": "C-s",
     "input_hex": "13"
   },
   {
-    "at": 33.9031,
+    "at": 44.697,
     "keys": "search: Intentional failure",
     "input_hex": "496e74656e74696f6e616c206661696c757265"
   },
   {
-    "at": 34.1032,
+    "at": 44.8972,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 34.3034,
+    "at": 45.0974,
     "keys": "C-s",
     "input_hex": "13"
   },
   {
-    "at": 34.5036,
+    "at": 45.2975,
     "keys": "search: #+begin_src sh",
     "input_hex": "232b626567696e5f737263207368"
   },
   {
-    "at": 34.7037,
+    "at": 45.4978,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 34.9039,
+    "at": 45.6979,
     "keys": "C-a",
     "input_hex": "01"
   },
   {
-    "at": 35.1041,
+    "at": 45.8981,
     "keys": "C-c C-c",
     "input_hex": "0303"
   },
   {
-    "at": 35.7061,
+    "at": 46.5003,
     "keys": "Org execution approval: yes",
     "input_hex": "796573"
   },
   {
-    "at": 35.9563,
+    "at": 46.7505,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 36.3565,
+    "at": 47.1507,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 39.6751,
+    "at": 49.2076,
     "keys": "M-<",
     "input_hex": "1b3c"
   },
   {
-    "at": 40.0252,
+    "at": 49.5578,
     "keys": "C-n \u2014 select db-01",
     "input_hex": "0e"
   },
   {
-    "at": 40.3754,
+    "at": 49.908,
     "keys": "RET \u2014 inspect failed host",
     "input_hex": "0d"
   },
   {
-    "at": 40.8756,
+    "at": 50.4081,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 42.7279,
+    "at": 52.2603,
     "keys": "C-x b",
     "input_hex": "1862"
   },
   {
-    "at": 43.0782,
+    "at": 52.6105,
     "keys": "buffer: runbook.org",
     "input_hex": "72756e626f6f6b2e6f7267"
   },
   {
-    "at": 43.3783,
+    "at": 52.9106,
     "keys": "RET",
     "input_hex": "0d"
   },
   {
-    "at": 43.6785,
+    "at": 53.2108,
     "keys": "C-x 1",
     "input_hex": "1831"
   },
   {
-    "at": 44.1787,
+    "at": 53.711,
     "keys": "M-> \u2014 inspect final Org summary",
     "input_hex": "1b3e"
   }

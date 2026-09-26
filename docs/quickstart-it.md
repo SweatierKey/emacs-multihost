@@ -26,6 +26,25 @@ uptime
 lavoro rispettando la conferma di Org. Se modifichi il blocco mentre è in corso,
 i risultati rimangono nella cronologia e non sovrascrivono il documento modificato.
 
+Per preparare gli host prima di lavorare, marcali nell'inventario e premi `w`.
+L'inizializzazione avviene in processi separati; `C` mostra connessioni e worker
+conservati, `k` ne chiude uno. I blocchi successivi riutilizzano la connessione.
+Il limite globale è `multihost-connection-limit` (quattro per impostazione
+predefinita), anche quando più runbook e completamenti sono attivi insieme.
+
+Nel corpo di un blocco shell con `:hosts`, scrivi per esempio `cat conf`, poi usa
+`M-x multihost-org-completion-enable`. `M-TAB` propone comandi o file rilevati sui
+server selezionati. La prima richiesta può essere ancora in corso: richiama il
+completamento dopo la risposta. Le annotazioni indicano gli host di provenienza;
+`multihost-completion-policy` sceglie unione o intersezione. `C-c '` eredita
+l'abilitazione nel buffer di editing shell. Per fermarlo usa
+`M-x multihost-org-completion-disable`. `M-x multihost-completion-inspect` mostra
+lo stato di ogni host e gli eventuali errori senza avviare nuove richieste.
+
+Serve Bash remoto per `compgen`; sono supportati nomi di comandi e file con
+prefissi semplici, non le opzioni specifiche dei programmi. I dettagli e le
+misure riproducibili sono nella [guida alle connessioni e al completamento](connections-and-completion.md).
+
 Per PSMP e MFA, il percorso esplicito `M-x multihost-org-execute-foreground`
 usa l'autenticazione interattiva TRAMP dell'Emacs corrente e procede in serie.
 Non ha il timeout rigido del background: `C-g` interrompe. Gli alias e le policy

@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "environment": "two loopback SSH endpoints on one Linux kernel",
+  "interpretation": [
+    "Elapsed time includes worker startup and connection initialization.",
+    "Repeated v1.0 calls still create fresh Emacs and SSH processes.",
+    "Parent timer gaps are a responsiveness proxy, not a full GUI input-latency measurement.",
+    "Measurements are observations; tests do not require a speedup threshold."
+  ],
+  "measurements": [
+    {
+      "emacs": "30.1",
+      "tramp": "2.7.1.30.1",
+      "timer_interval_seconds": 0.02,
+      "scheduled": [
+        {
+          "elapsed_seconds": 2.348937749862671,
+          "parent_timer_ticks": 118,
+          "parent_timer_max_gap_seconds": 0.020122289657592773,
+          "value": {
+            "iteration": 0,
+            "worker_pid": 87703,
+            "job_seconds": 2.3019700050354004,
+            "stdout": "SSH=127.0.0.1 55068 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 2.3289055824279785,
+          "parent_timer_ticks": 117,
+          "parent_timer_max_gap_seconds": 0.020066499710083008,
+          "value": {
+            "iteration": 1,
+            "worker_pid": 87927,
+            "job_seconds": 2.267982244491577,
+            "stdout": "SSH=127.0.0.1 55076 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 2.257789134979248,
+          "parent_timer_ticks": 113,
+          "parent_timer_max_gap_seconds": 0.02010321617126465,
+          "value": {
+            "iteration": 2,
+            "worker_pid": 88117,
+            "job_seconds": 2.2098946571350098,
+            "stdout": "SSH=127.0.0.1 55918 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 2.3079721927642822,
+          "parent_timer_ticks": 116,
+          "parent_timer_max_gap_seconds": 0.020090103149414062,
+          "value": {
+            "iteration": 3,
+            "worker_pid": 88307,
+            "job_seconds": 2.2595551013946533,
+            "stdout": "SSH=127.0.0.1 55930 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 2.2873284816741943,
+          "parent_timer_ticks": 115,
+          "parent_timer_max_gap_seconds": 0.020093441009521484,
+          "value": {
+            "iteration": 4,
+            "worker_pid": 88497,
+            "job_seconds": 2.23976469039917,
+            "stdout": "SSH=127.0.0.1 55942 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 2.3078505992889404,
+          "parent_timer_ticks": 116,
+          "parent_timer_max_gap_seconds": 0.020786762237548828,
+          "value": {
+            "iteration": 5,
+            "worker_pid": 88687,
+            "job_seconds": 2.248983860015869,
+            "stdout": "SSH=127.0.0.1 55954 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        }
+      ],
+      "direct_tramp_reference": [
+        {
+          "elapsed_seconds": 2.1662580966949463,
+          "parent_timer_ticks": 5,
+          "parent_timer_max_gap_seconds": 1.5168166160583496,
+          "value": {
+            "iteration": 0,
+            "stdout": "SSH=127.0.0.1 55960 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.7542152404785156,
+          "parent_timer_ticks": 3,
+          "parent_timer_max_gap_seconds": 0.7240922451019287,
+          "value": {
+            "iteration": 1,
+            "stdout": "SSH=127.0.0.1 55960 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        }
+      ],
+      "delayed_ssh_initialization": {
+        "elapsed_seconds": 3.5031702518463135,
+        "parent_timer_ticks": 176,
+        "parent_timer_max_gap_seconds": 0.020096540451049805,
+        "value": {
+          "imposed_ssh_delay_seconds": 1.2,
+          "stdout": "SSH=127.0.0.1 56006 127.0.0.1 22261\nrole=web\nservice=active\n"
+        }
+      },
+      "distinct_worker_pids": 6,
+      "distinct_ssh_connections": 6,
+      "label": "release-1.0",
+      "measured_at": "2026-09-26T15:59:26.134046+00:00",
+      "system": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+      "source_sha256": {
+        "multihost.el": "96460da41eb80abbb607c103349f153efc6830ddba29fcf3f4c519eb2ec452a4",
+        "ob-multihost.el": "cba418ed253205d9f06fc3fa231bfd10bd5d51598299d841ac50676fd3d61e90",
+        "multihost-worker.el": "6fd38c17f3cd6bc6ff0fe5c2e2c557a94ddc60fadb3592a00306b542c2d29537",
+        "multihost-inventory.el": "0ac091e4256a68f1d243d9bb94a05880d4799526ea234edada3c69f9e16e9059",
+        "multihost-engine.el": "d11d440d1ffcc6b511dce6646c038e2591ad55625722ef04d862a2c5d1719b56"
+      }
+    },
+    {
+      "emacs": "30.1",
+      "tramp": "2.7.1.30.1",
+      "timer_interval_seconds": 0.02,
+      "scheduled": [
+        {
+          "elapsed_seconds": 2.349594831466675,
+          "parent_timer_ticks": 118,
+          "parent_timer_max_gap_seconds": 0.02007603645324707,
+          "value": {
+            "iteration": 0,
+            "worker_pid": 93029,
+            "job_seconds": 2.297670841217041,
+            "stdout": "SSH=127.0.0.1 55738 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.8107631206512451,
+          "parent_timer_ticks": 41,
+          "parent_timer_max_gap_seconds": 0.020260334014892578,
+          "value": {
+            "iteration": 1,
+            "worker_pid": 93029,
+            "job_seconds": 0.7489402294158936,
+            "stdout": "SSH=127.0.0.1 55738 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.790459394454956,
+          "parent_timer_ticks": 40,
+          "parent_timer_max_gap_seconds": 0.020069122314453125,
+          "value": {
+            "iteration": 2,
+            "worker_pid": 93029,
+            "job_seconds": 0.7289354801177979,
+            "stdout": "SSH=127.0.0.1 55738 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.770003080368042,
+          "parent_timer_ticks": 39,
+          "parent_timer_max_gap_seconds": 0.020041465759277344,
+          "value": {
+            "iteration": 3,
+            "worker_pid": 93029,
+            "job_seconds": 0.7272837162017822,
+            "stdout": "SSH=127.0.0.1 55738 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.8001217842102051,
+          "parent_timer_ticks": 40,
+          "parent_timer_max_gap_seconds": 0.020050048828125,
+          "value": {
+            "iteration": 4,
+            "worker_pid": 93029,
+            "job_seconds": 0.7510905265808105,
+            "stdout": "SSH=127.0.0.1 55738 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.8216183185577393,
+          "parent_timer_ticks": 42,
+          "parent_timer_max_gap_seconds": 0.020232439041137695,
+          "value": {
+            "iteration": 5,
+            "worker_pid": 93029,
+            "job_seconds": 0.7731385231018066,
+            "stdout": "SSH=127.0.0.1 55738 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        }
+      ],
+      "direct_tramp_reference": [
+        {
+          "elapsed_seconds": 2.2002639770507812,
+          "parent_timer_ticks": 5,
+          "parent_timer_max_gap_seconds": 1.5396432876586914,
+          "value": {
+            "iteration": 0,
+            "stdout": "SSH=127.0.0.1 55004 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        },
+        {
+          "elapsed_seconds": 0.7509570121765137,
+          "parent_timer_ticks": 3,
+          "parent_timer_max_gap_seconds": 0.7208800315856934,
+          "value": {
+            "iteration": 1,
+            "stdout": "SSH=127.0.0.1 55004 127.0.0.1 22261\nrole=web\nservice=active\n"
+          }
+        }
+      ],
+      "delayed_ssh_initialization": {
+        "elapsed_seconds": 3.5546159744262695,
+        "parent_timer_ticks": 178,
+        "parent_timer_max_gap_seconds": 0.020088911056518555,
+        "value": {
+          "imposed_ssh_delay_seconds": 1.2,
+          "stdout": "SSH=127.0.0.1 55008 127.0.0.1 22261\nrole=web\nservice=active\n"
+        }
+      },
+      "distinct_worker_pids": 1,
+      "distinct_ssh_connections": 1,
+      "label": "persistent-pool",
+      "measured_at": "2026-09-26T16:13:20.763228+00:00",
+      "system": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+      "source_sha256": {
+        "multihost.el": "ab45ed0464052cdff6b0b26966fd4731d38e82aada6c53c9d81f0c6f23238e53",
+        "multihost-connection.el": "ccbc4842e04512bfd436807d0bb738dd950a5ab0bf92f227675494268bae6042",
+        "ob-multihost.el": "bfecf614622df3906f3f523f8dd8347833118dfa9dced5ea863e2a57169be50f",
+        "multihost-connections-ui.el": "2070f91a40d1e1bb83c50b811e5ebb80dc675df6dae58aaa1ef4390a00811030",
+        "multihost-worker.el": "0a10848f346ec09694e0f9e0ee8940c84a020142f42a6c3f7032256078e3e8c0",
+        "multihost-compgen.el": "cb6f61941f6cc1dbae43278374268074325c61bcadd55137a5f11a7a8bc72d07",
+        "multihost-inventory.el": "e819770f9358b64ce58349e463a9cea84ed502feb89ed426dc700889621a0fdf",
+        "multihost-completion.el": "ed1926c31615c898ee6bd4ece8c099d2c756fbdb6ba80e07648dca02e916ff99",
+        "multihost-engine.el": "c4981833e9b0db07c04b68c009bee632c3b076778f8fee2745d0adcd53a7b99f"
+      }
+    }
+  ]
+}

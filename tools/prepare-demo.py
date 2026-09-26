@@ -59,10 +59,11 @@ def main():
 An inventory, repeatable Org runbooks, and one result per host.
 
 In this recording:
-  1. Mark two hosts and run a check in parallel.
-  2. Read one host, all outputs, and grouped results.
-  3. Execute an Org runbook in selection order.
-  4. Inspect an intentional failure: stderr and exit 7.
+  1. Initialize two retained SSH connections and inspect their workers.
+  2. Run a parallel check; read separate, combined and grouped output.
+  3. Complete remote files with host annotations in Org and its shell editor.
+  4. Execute an Org runbook in selection order.
+  5. Inspect an intentional failure: stderr and exit 7.
 
 Real Emacs keys. Vertico and Marginalia are enabled.
 Two loopback SSH endpoints share one kernel. No CyberArk deployment.

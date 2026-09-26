@@ -16,29 +16,15 @@
 (require 'subr-x)
 (require 'multihost-inventory)
 (require 'multihost-worker)
+(require 'multihost-connection)
 
-(defgroup multihost nil "Organized remote administration with Org." :group 'tools)
-(defcustom multihost-state-directory (expand-file-name "multihost" user-emacs-directory)
-  "Private directory for run metadata and results."
-  :type 'directory :group 'multihost)
-(defcustom multihost-worker-init-file nil
-  "Optional trusted Lisp file loaded by each isolated worker.
-Use this explicitly for TRAMP or authentication configuration.  Workers
-never load the ordinary Emacs init file automatically."
-  :type '(choice (const nil) file) :group 'multihost)
-(defcustom multihost-worker-program
-  (expand-file-name invocation-name invocation-directory)
-  "Emacs executable used for isolated workers."
-  :type 'file :group 'multihost)
-(defconst multihost-engine--library-directory
-  (file-name-directory (or load-file-name buffer-file-name default-directory)))
 (defconst multihost-engine--terminal-states
   '(succeeded failed timed-out cancelled skipped))
 (defvar multihost-runs nil "Runs in this Emacs session, newest first.")
 
 (cl-defstruct multihost-job
   id index host directory (status 'queued) started-at ended-at exit-code
-  (stdout "") (stderr "") value error process timer)
+  (stdout "") (stderr "") value error process timer request)
 (cl-defstruct multihost-run
   id jobs queue concurrency timeout fail-fast cancelled directory spec callback
   started-at ended-at (state 'ready))
@@ -178,60 +164,32 @@ See `multihost-create-run' for CONCURRENCY, TIMEOUT, FAIL-FAST and CALLBACK."
     (run-at-time 0 nil #'multihost-engine--pump run)
     run))
 
-(defun multihost-engine--job-file (run job extension)
-  "Return a private file in RUN for JOB and EXTENSION."
-  (expand-file-name (format "%04d.%s" (multihost-job-index job) extension)
-                    (multihost-run-directory run)))
-
-(defun multihost-engine--diagnostic-filter (process output)
-  "Keep only the last 64 KiB of worker PROCESS diagnostic OUTPUT."
-  (when-let* ((buffer (process-buffer process)))
-    (when (buffer-live-p buffer)
-      (with-current-buffer buffer
-        (let ((inhibit-read-only t))
-          (goto-char (point-max))
-          (insert output)
-          (when (> (buffer-size) 65536)
-            (delete-region (point-min) (- (point-max) 65536))))))))
-
 (defun multihost-engine--launch (run job)
-  "Launch the isolated worker for JOB in RUN."
-  (let* ((request (multihost-engine--job-file run job "request.json"))
-         (result (multihost-engine--job-file run job "result.json"))
-         (buffer (generate-new-buffer (format " *multihost-worker-%s*" (multihost-job-id job))))
-         (default-directory (multihost-run-directory run)))
-    (setf (multihost-job-status job) 'running
-          (multihost-job-started-at job) (float-time))
-    (condition-case err
-        (progn
-          (multihost-worker--write-json
-           request `(("schema" . ,multihost-worker-protocol-version)
-                     ("id" . ,(multihost-job-id job))
-                     ("directory" . ,(multihost-job-directory job))
-                     ("init" . ,(and multihost-worker-init-file
-                                      (expand-file-name multihost-worker-init-file)))
-                     ("spec" . ,(multihost-worker--encode-value (multihost-run-spec run)))))
-          (let ((process
-                 (make-process
-                  :name (format "multihost-%s" (multihost-job-id job))
-                  :buffer buffer :noquery t :connection-type 'pipe
-                  :coding 'utf-8-unix
-                  :command (list multihost-worker-program "--quick" "--batch"
-                                 "-L" multihost-engine--library-directory
-                                 "-l" (expand-file-name "multihost-worker.el"
-                                                        multihost-engine--library-directory)
-                                 "--funcall" "multihost-worker-main" request result)
-                  :filter #'multihost-engine--diagnostic-filter
-                  :sentinel (lambda (process event)
-                              (multihost-engine--sentinel run job process event)))))
-            (setf (multihost-job-process job) process
-                  (multihost-job-timer job)
-                  (run-at-time (multihost-run-timeout run) nil
-                               #'multihost-engine--timeout run job))))
-      (error
-       (when (buffer-live-p buffer) (kill-buffer buffer))
-       (multihost-engine--finish run job 'failed :error (error-message-string err))))
-    (multihost-engine--notify run job)))
+  "Submit JOB in RUN to the bounded persistent connection pool."
+  (setf (multihost-job-status job) 'running
+        (multihost-job-started-at job) (float-time))
+  (condition-case err
+      (setf (multihost-job-request job)
+            (multihost-connection-submit
+             (multihost-job-directory job) 'execute (multihost-run-spec run)
+             (lambda (request result)
+               (setf (multihost-job-process job) (multihost-request-process request))
+               (let ((status (plist-get result :status))
+                     (code (plist-get result :exit-code)))
+                 (if (not (and (memq status '(succeeded failed timed-out cancelled))
+                               (stringp (plist-get result :stdout))
+                               (stringp (plist-get result :stderr))
+                               (or (null code) (integerp code) (stringp code))
+                               (or (null (plist-get result :error)) (stringp (plist-get result :error)))
+                               (or (not (eq status 'succeeded)) (eql code 0))))
+                     (multihost-engine--finish run job 'failed :error "Invalid execution response protocol")
+                   (multihost-engine--finish
+                    run job status :exit-code code
+                    :stdout (plist-get result :stdout) :stderr (plist-get result :stderr)
+                    :value (plist-get result :value) :error (plist-get result :error)))))
+             :timeout (multihost-run-timeout run)))
+    (error (multihost-engine--finish run job 'failed :error (error-message-string err))))
+  (multihost-engine--notify run job))
 
 (defun multihost-engine--pump (run)
   "Fill available execution slots in RUN."
@@ -251,38 +209,6 @@ See `multihost-create-run' for CONCURRENCY, TIMEOUT, FAIL-FAST and CALLBACK."
       (multihost-engine--notify run nil)))
   (multihost-save-run run))
 
-(defun multihost-engine--diagnostics (job)
-  "Return the bounded diagnostic log for JOB."
-  (let* ((process (multihost-job-process job))
-         (buffer (and process (process-buffer process))))
-    (if (buffer-live-p buffer) (with-current-buffer buffer (buffer-string)) "")))
-
-(defun multihost-engine--sentinel (run job process _event)
-  "Collect worker PROCESS completion for JOB in RUN."
-  (when (and (memq (process-status process) '(exit signal failed))
-             (eq (multihost-job-status job) 'running))
-    (condition-case err
-        (progn
-          (unless (and (eq (process-status process) 'exit)
-                       (zerop (process-exit-status process)))
-            (error "Worker exited %s: %s" (process-exit-status process)
-                   (string-trim (multihost-engine--diagnostics job))))
-          (let* ((file (multihost-engine--job-file run job "result.json"))
-                 (response (multihost-worker--read-json file))
-                 (result (multihost-worker--decode-value (gethash "result" response))))
-            (unless (and (eql (gethash "schema" response) multihost-worker-protocol-version)
-                         (equal (gethash "id" response) (multihost-job-id job))
-                         (memq (plist-get result :status) '(succeeded failed))
-                         (stringp (plist-get result :stdout))
-                         (stringp (plist-get result :stderr))
-                         (or (not (eq (plist-get result :status) 'succeeded))
-                             (eql (plist-get result :exit-code) 0)))
-              (error "Invalid worker response protocol"))
-            (apply #'multihost-engine--finish run job (plist-get result :status)
-                   (cl-loop for (key value) on result by #'cddr
-                            unless (eq key :status) append (list key value)))))
-      (error (multihost-engine--finish run job 'failed :error (error-message-string err))))))
-
 (cl-defun multihost-engine--finish (run job status &key exit-code stdout stderr value error)
   "Finalize JOB in RUN exactly once with STATUS and its outcome fields."
   (unless (memq (multihost-job-status job) multihost-engine--terminal-states)
@@ -296,45 +222,25 @@ See `multihost-create-run' for CONCURRENCY, TIMEOUT, FAIL-FAST and CALLBACK."
           (multihost-job-error job) error)
     (when (timerp (multihost-job-timer job)) (cancel-timer (multihost-job-timer job)))
     (setf (multihost-job-timer job) nil)
-    (when-let* ((process (multihost-job-process job)))
-      (when (process-live-p process) (delete-process process))
-      (when-let* ((buffer (process-buffer process)))
-        (when (buffer-live-p buffer)
-          ;; Private diagnostics are deliberately bounded and never displayed
-          ;; in the Org document automatically.
-          (let ((file (multihost-engine--job-file run job "worker.log")))
-            (let ((temporary (make-temp-file (concat file ".tmp-"))))
-              (unwind-protect
-                  (progn
-                    (set-file-modes temporary #o600)
-                    (with-current-buffer buffer
-                      (write-region (point-min) (point-max) temporary nil 'silent))
-                    (rename-file temporary file t))
-                (when (file-exists-p temporary) (delete-file temporary)))))
-          (kill-buffer buffer))))
-    (dolist (extension '("request.json" "result.json"))
-      (let ((file (multihost-engine--job-file run job extension)))
-        (when (file-exists-p file) (delete-file file))))
+    (when (multihost-job-request job)
+      (multihost-connection-cancel (multihost-job-request job)))
     (when (and (multihost-run-fail-fast run) (memq status '(failed timed-out)))
-      (dolist (pending (multihost-run-queue run))
-        (when (eq (multihost-job-status pending) 'queued)
+      (dolist (pending (multihost-run-jobs run))
+        (when (or (eq (multihost-job-status pending) 'queued)
+                  (and (eq (multihost-job-status pending) 'running)
+                       (multihost-job-request pending)
+                       (eq (multihost-request-status (multihost-job-request pending)) 'queued)))
           (setf (multihost-job-status pending) 'skipped
                 (multihost-job-ended-at pending) (float-time)
                 (multihost-job-error pending) "Skipped by fail-fast after an earlier failure")
+          (when (multihost-job-request pending)
+            (multihost-connection-cancel (multihost-job-request pending)))
           (multihost-engine--notify run pending)))
       (setf (multihost-run-queue run) nil))
     (multihost-save-run run)
     (multihost-engine--notify run job)
     ;; Avoid recursively launching jobs from a sentinel or failed spawn.
     (run-at-time 0 nil #'multihost-engine--pump run)))
-
-(defun multihost-engine--timeout (run job)
-  "Expire JOB in RUN if it is still running."
-  (when (eq (multihost-job-status job) 'running)
-    (multihost-engine--finish
-     run job 'timed-out
-     :error (format "Host deadline exceeded (%s s); remote termination is not guaranteed"
-                    (multihost-run-timeout run)))))
 
 (defun multihost-cancel-job (run job)
   "Cancel JOB belonging to RUN; remote termination is not guaranteed."

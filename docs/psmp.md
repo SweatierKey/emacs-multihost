@@ -45,7 +45,10 @@ for interactive TRAMP authentication. Authentication depends on the prompts and
 methods supported by TRAMP and by the deployment; the command does not automate
 OTP entry or guarantee support for every custom login dialogue.
 
-Background runs use isolated batch Emacs workers. A successful login in the main
+Background runs use persistent isolated batch Emacs workers. Jobs, explicit
+warm-up and completion reuse the TRAMP shell inside a worker. This does not
+require enabling SSH ControlMaster. Batch authentication prompts fail explicitly;
+the pool does not forward MFA challenges into the editor. A successful login in the main
 Emacs process does **not** guarantee that a worker can reuse that authentication.
 Use an authentication method approved for unattended connections or an explicitly
 approved, verified connection-sharing setup. Otherwise use foreground execution.
