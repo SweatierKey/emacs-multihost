@@ -1,0 +1,25 @@
+name: Tests
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['ubuntu:24.04', 'debian:trixie']
+    container: ${{ matrix.image }}
+    steps:
+      - name: Install system prerequisites
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git ca-certificates emacs-nox openssh-client openssh-server python3 make
+          install -d -m 755 /run/sshd
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Run as an unprivileged user
+        run: |
+          useradd --create-home --shell /bin/bash multihost-test
+          passwd -d multihost-test
+          chown -R multihost-test:multihost-test .
+          su -s /bin/bash multihost-test -c 'set -e; emacs --version; make check; make integration'

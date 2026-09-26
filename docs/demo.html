@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multihost · Real Emacs demonstration</title>
+  <link rel="stylesheet" href="player/asciinema-player.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<main>
+  <nav><a href="https://github.com/SweatierKey/emacs-multihost">Source and installation</a></nav>
+  <p class="eyebrow">EMACS · ORG BABEL · TRAMP</p>
+  <h1>From a host list<br>to an operations runbook.</h1>
+  <p class="lead">Mark hosts, run a check, inspect each result, and keep repeatable work in Org.</p>
+  <div id="player" aria-label="Recorded Emacs session"></div>
+  <p class="caption">Actual terminal output and keyboard input. Vertico and Marginalia are enabled.
+    Two loopback SSH endpoints share one kernel; this is not a CyberArk deployment test.</p>
+  <div class="grid">
+    <section><h2>What the recording shows</h2>
+      <ol>
+        <li><code>M-x multihost</code>, <code>T</code>, <code>x</code>: run a check on two marked hosts.</li>
+        <li><code>RET</code>, <code>a</code>, <code>d</code>: separate output, combined output, and digest.</li>
+        <li><code>C-c C-c</code>: execute an Org block serially in the selected host order.</li>
+        <li>An intentional remote failure retains exit <code>7</code> and stderr.</li>
+      </ol>
+    </section>
+    <section><h2>Reproduce it</h2>
+      <p>Requirements: Emacs, Python 3, OpenSSH client/server, and a non-root Linux account.</p>
+      <pre><code>python3 tools/prepare-demo.py
+python3 tools/demo.py
+python3 -m http.server 8000</code></pre>
+      <p>Open <code>http://localhost:8000/docs/demo.html</code>. Dependencies are pinned and
+        checksum verified. The recording and player work offline after preparation.</p>
+    </section>
+  </div>
+  <footer>
+    <a href="../recordings/demo.cast" download>Download recording</a>
+    <a href="demo-results.json">Assertions and observed results</a>
+    <a href="demo-keys.json">Keystroke trace</a>
+    <a href="psmp.md">PSMP deployment notes</a>
+    <a href="player/provenance.json">Player provenance</a>
+  </footer>
+</main>
+<script src="player/asciinema-player.js"></script>
+<script>
+  AsciinemaPlayer.create('../recordings/demo.cast', document.getElementById('player'), {
+    fit: 'width', terminalFontSize: '15px', theme: 'asciinema', idleTimeLimit: 3,
+    autoPlay: false, loop: false, preload: true
+  });
+</script>
+</body>
+</html>

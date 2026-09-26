@@ -1,0 +1,31 @@
+EMACS=emacs bash tools/test-integration.sh
+SSH lab ready: web=127.0.0.1:22261, db=127.0.0.1:22262 (/home/admin/emacs-multihost/.runtime/lab)
+Running 13 tests (2026-09-26 16:37:49+0200, selector ‘t’)
+   passed   1/13  multihost-integration-cancel-without-queued-execution (0.204076 sec)
+   passed   2/13  multihost-integration-exit-code-and-output (2.260702 sec)
+   passed   3/13  multihost-integration-explicit-user-port-cwd-no-local-fallback (2.230595 sec)
+   passed   4/13  multihost-integration-fail-fast-skips-queued-host (2.262342 sec)
+   passed   5/13  multihost-integration-invalid-directory-fails-remotely (2.260949 sec)
+Remote overlap 1.113s; parent timer ticks 82
+   passed   6/13  multihost-integration-parallel-overlap-and-responsive-parent (3.255369 sec)
+   passed   7/13  multihost-integration-python-backend-runs-remotely (2.441910 sec)
+   passed   8/13  multihost-integration-retry-failed-only (4.221636 sec)
+Serial remote order db -> web; gap 2.179s
+   passed   9/13  multihost-integration-serial-preserves-selection-order (6.842058 sec)
+   passed  10/13  multihost-integration-timeout-without-queued-execution (1.507808 sec)
+Could not read ‘org-id-locations’ from ~/.emacs.d/.org-id-locations, setting it to nil
+Multihost 20260926T163817-Fo9lnQ: running
+Multihost 20260926T163817-Fo9lnQ: finished
+   passed  11/13  multihost-org-integration-background-vars-noweb-and-final-results (2.799892 sec)
+Multihost foreground: web
+Babel evaluation exited with code 7
+Multihost foreground: db
+Multihost 20260926T163819-Nj0X0C: failed
+   passed  12/13  multihost-org-integration-foreground-failure-keeps-per-host-status (2.899063 sec)
+Multihost foreground: db
+Multihost foreground: web
+Multihost 20260926T163822-hwpFaP: succeeded
+   passed  13/13  multihost-org-integration-foreground-real-ssh-two-hosts (1.638520 sec)
+
+Ran 13 tests, 13 results as expected, 0 unexpected (2026-09-26 16:38:24+0200, 34.825945 sec)
+

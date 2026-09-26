@@ -1,0 +1,7 @@
+*.elc
+.runtime/
+.coverage/
+__pycache__/
+dist/
+*.tar.gz
+test-results.xml

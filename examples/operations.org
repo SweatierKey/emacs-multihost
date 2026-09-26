@@ -1,0 +1,54 @@
+#+title: Remote operations with Multihost
+#+property: header-args:sh :results output :eval query
+
+These examples use the fictional hosts in inventory.json. Review the actual
+inventory before running. Start with M-x multihost-org-preview.
+
+* Parallel service check
+
+#+name: health
+#+begin_src sh :hosts @web :concurrency 4 :timeout 45 :renderer digest
+hostname
+uptime
+systemctl is-active nginx
+#+end_src
+
+* Ordered check, stop dispatching after a failure
+
+#+begin_src sh :hosts web-01 web-02 :concurrency 1 :fail-fast yes :renderer combined
+hostname
+test -d /var/log
+df -h /var/log
+#+end_src
+
+* Reusable code with Org noweb
+
+#+name: common-check
+#+begin_src sh :eval never
+printf 'User: '; id -un
+printf 'Directory: '; pwd
+#+end_src
+
+#+begin_src sh :hosts @web :noweb yes :renderer per-host
+<<common-check>>
+uptime
+#+end_src
+
+* Python on the remote machine
+
+#+begin_src python :hosts @web :results output :renderer table
+import os
+import platform
+print(platform.node(), os.getcwd())
+#+end_src
+
+* Interactive authentication in the current Emacs
+
+This serial path allows TRAMP to ask for authentication. It has no hard deadline;
+C-g interrupts. The SSH alias and CyberArk policy determine what is permitted.
+
+#+begin_src sh :hosts db-01 :execution foreground :renderer combined
+id -un
+hostname
+pwd
+#+end_src

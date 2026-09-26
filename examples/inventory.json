@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "hosts": [
+    {
+      "name": "web-01",
+      "connection": "company-web-01",
+      "groups": ["staging", "web"],
+      "description": "First staging web server; connection is an SSH config alias"
+    },
+    {
+      "name": "web-02",
+      "connection": "company-web-02",
+      "groups": ["staging", "web"],
+      "description": "Second staging web server"
+    },
+    {
+      "name": "db-01",
+      "connection": "/ssh:company-db-01:/srv/operations/",
+      "groups": ["staging", "database"],
+      "description": "Database using an SSH alias and an explicit working directory"
+    }
+  ]
+}

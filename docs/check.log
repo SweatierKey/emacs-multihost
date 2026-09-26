@@ -1,0 +1,101 @@
+emacs -Q --batch -L . --eval '(setq byte-compile-error-on-warn t)' -f batch-byte-compile multihost-inventory.el multihost-worker.el multihost-engine.el multihost.el ob-multihost.el
+emacs -Q --batch -L . -L test -l test/run-tests.el
+Running 77 tests (2026-09-26 16:37:45+0200, selector ‘t’)
+   passed   1/77  multihost-boundary-audit-rejects-control-characters-in-run-id (0.001535 sec)
+   passed   2/77  multihost-boundary-audit-rejects-false-success (0.000937 sec)
+   passed   3/77  multihost-boundary-audit-rejects-invalid-timestamp (0.000998 sec)
+   passed   4/77  multihost-boundary-audit-rejects-nontext-output (0.000901 sec)
+   passed   5/77  multihost-boundary-flat-list-is-not-deep-nesting (0.000345 sec)
+   passed   6/77  multihost-boundary-json-rejects-trailing-data (0.000220 sec)
+   passed   7/77  multihost-boundary-json-roundtrip-distinguishes-inert-values (0.001453 sec)
+   passed   8/77  multihost-boundary-private-state-rejects-remote-before-io (0.198525 sec)
+   passed   9/77  multihost-boundary-private-state-rejects-symlink-without-chmod (0.000240 sec)
+   passed  10/77  multihost-boundary-relative-inventory-cannot-resolve-remotely (0.166844 sec)
+   passed  11/77  multihost-boundary-relative-state-cannot-resolve-remotely (0.000205 sec)
+   passed  12/77  multihost-boundary-worker-init-rejects-remote-before-access (0.171071 sec)
+   passed  13/77  multihost-boundary-worker-rejects-local-privilege-and-implicit-host (0.000200 sec)
+   passed  14/77  multihost-engine-cancel-before-first-tick-does-not-launch (0.062710 sec)
+   passed  15/77  multihost-engine-concurrency-is-bounded-and-refills-slots (0.154718 sec)
+   passed  16/77  multihost-engine-fail-fast-preserves-already-running-jobs (0.103547 sec)
+   passed  17/77  multihost-engine-finalization-is-idempotent (0.031200 sec)
+   passed  18/77  multihost-engine-freezes-mutable-source-and-inventory-strings (0.031558 sec)
+   passed  19/77  multihost-engine-literal-tramp-selector-audit-roundtrip (0.031309 sec)
+Multihost observer error: broken UI
+Multihost observer error: broken UI
+   passed  20/77  multihost-engine-observer-errors-do-not-corrupt-results (0.061834 sec)
+   passed  21/77  multihost-engine-private-audit-excludes-code-and-marks-interruption (0.031922 sec)
+   passed  22/77  multihost-engine-rejects-wrong-id-and-false-success-protocol (0.036167 sec)
+   passed  23/77  multihost-engine-retry-only-failed-hosts-in-original-order (0.030944 sec)
+   passed  24/77  multihost-engine-serial-is-ordered-and-waits-for-completion (0.125323 sec)
+   passed  25/77  multihost-engine-timeout-stops-worker-and-ignores-late-sentinel (0.032039 sec)
+   passed  26/77  multihost-engine-worker-crash-is-distinct-from-command-exit (0.073027 sec)
+   passed  27/77  multihost-engine-worker-start-failure-does-not-hang (0.073268 sec)
+   passed  28/77  multihost-inventory-case-sensitive-and-local-json (0.000121 sec)
+   passed  29/77  multihost-inventory-invalid-selectors (0.000213 sec)
+   passed  30/77  multihost-inventory-json-invalid (0.003194 sec)
+   passed  31/77  multihost-inventory-json-valid (0.000342 sec)
+   passed  32/77  multihost-inventory-literal-selectors (0.000160 sec)
+   passed  33/77  multihost-inventory-never-evaluates (0.000080 sec)
+   passed  34/77  multihost-inventory-preflight-does-not-connect (0.000086 sec)
+   passed  35/77  multihost-inventory-rejects-local-or-ambiguous-routing (0.000195 sec)
+   passed  36/77  multihost-inventory-routing-preserved (0.000119 sec)
+   passed  37/77  multihost-inventory-selection-copies-data (0.000059 sec)
+   passed  38/77  multihost-inventory-selection-order-and-exclusions (0.000098 sec)
+   passed  39/77  multihost-ui-digest-groups-complete-outcomes (0.000116 sec)
+Exported /tmp/multihost-export-test-wcgeAW/report.org
+   passed  40/77  multihost-ui-export-private-and-no-overwrite (0.007833 sec)
+   passed  41/77  multihost-ui-inventory-selection-keeps-inventory-order (0.000686 sec)
+   passed  42/77  multihost-ui-output-cannot-inject-org-code-or-drawers (0.717162 sec)
+   passed  43/77  multihost-ui-per-host-and-combined-buffers (0.000115 sec)
+   passed  44/77  multihost-ui-per-host-view-shows-babel-value (0.000056 sec)
+   passed  45/77  multihost-ui-relative-export-cannot-resolve-remotely (0.000165 sec)
+   passed  46/77  multihost-ui-reload-retains-only-existing-marks (0.000374 sec)
+   passed  47/77  multihost-ui-render-preserves-failure-and-zero-exit (0.000065 sec)
+   passed  48/77  multihost-ui-table-cells-cannot-add-columns (0.000034 sec)
+Babel evaluation exited with code 1
+   passed  49/77  multihost-worker-advice-is-removed-after-error (0.015650 sec)
+   passed  50/77  multihost-worker-connection-error-does-not-publish-input-as-output (0.000180 sec)
+   passed  51/77  multihost-worker-json-preserves-params-without-reading-code (0.000616 sec)
+   passed  52/77  multihost-worker-never-falls-back-to-local-execution (0.000040 sec)
+   passed  53/77  multihost-worker-python-defaults-to-python3 (0.007495 sec)
+Babel evaluation exited with code 9
+   passed  54/77  multihost-worker-python-output-and-exit-status (0.007478 sec)
+Can’t guess python-indent-offset, using defaults: 4
+   passed  55/77  multihost-worker-python-value-preserves-babel-value (0.008277 sec)
+   passed  56/77  multihost-worker-refuses-unsupported-or-unsafe-semantics (0.000158 sec)
+Babel evaluation exited with code 7
+   passed  57/77  multihost-worker-shell-failure-is-not-lisp-success (0.001774 sec)
+   passed  58/77  multihost-worker-tramp-minus-one-preserves-keyboard-quit (0.000266 sec)
+   passed  59/77  multihost-worker-variables-use-standard-babel-escaping (0.001603 sec)
+Babel evaluation exited with code 0
+   passed  60/77  multihost-worker-warning-on-stderr-does-not-mean-failure (0.002106 sec)
+   passed  61/77  ob-multihost-authorized-expansion-happens-once (0.000690 sec)
+   passed  62/77  ob-multihost-block-without-hosts-passes-through (0.000350 sec)
+Multihost: source changed; results retained in run edited
+   passed  63/77  ob-multihost-edited-block-retains-results-outside-runbook (0.000615 sec)
+Evaluation of this sh code block is aborted.
+   passed  64/77  ob-multihost-eval-never-and-denied-query-prevent-expansion (0.178982 sec)
+   passed  65/77  ob-multihost-export-never-broadcasts (0.000395 sec)
+   passed  66/77  ob-multihost-foreground-command-overrides-background-settings (0.000573 sec)
+Multihost foreground: web
+   passed  67/77  ob-multihost-foreground-fail-fast-keeps-order (0.001606 sec)
+Multihost foreground: web
+Multihost display callback: Observer failed
+Multihost foreground: db
+Multihost display callback: Observer failed
+Multihost display callback: Observer failed
+   passed  68/77  ob-multihost-foreground-observer-error-does-not-break-execution (0.001254 sec)
+Multihost foreground: web
+   passed  69/77  ob-multihost-foreground-quit-marks-running-and-queued (0.000950 sec)
+   passed  70/77  ob-multihost-foreign-source-info-cannot-execute-current-body (0.000470 sec)
+   passed  71/77  ob-multihost-invalid-options-fail-before-consent-or-execution (0.002436 sec)
+   passed  72/77  ob-multihost-killed-source-buffer-is-harmless (0.000049 sec)
+   passed  73/77  ob-multihost-older-run-cannot-overwrite-newer-submission (0.000659 sec)
+Type q in help window to delete it
+   passed  74/77  ob-multihost-preview-does-not-evaluate-vars-or-connect (0.000698 sec)
+   passed  75/77  ob-multihost-preview-rejects-lisp-routing-without-eval (0.000367 sec)
+   passed  76/77  ob-multihost-result-insertion-replaces-one-drawer (0.000888 sec)
+   passed  77/77  ob-multihost-unsupported-result-placement-rejected-before-execution (0.001796 sec)
+
+Ran 77 tests, 77 results as expected, 0 unexpected (2026-09-26 16:37:47+0200, 2.397189 sec)
+

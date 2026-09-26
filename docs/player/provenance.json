@@ -1,0 +1,11 @@
+{
+  "project": "asciinema-player",
+  "version": "3.11.0",
+  "homepage": "https://github.com/asciinema/asciinema-player",
+  "license": "Apache-2.0",
+  "files": {
+    "asciinema-player.js": "914204b07399c5e94f6122609ec4630a71d4b662098ab3b10e1748d559a6a750",
+    "LICENSE": "63422284ed65be54ab38d8a94e7518d27e222fbb26c9ae4cd984c63926e91c12",
+    "asciinema-player.css": "c9ab8b978c4547141eeb6131caefc5604df2ccd78e2f9076931d7691ba47f399"
+  }
+}
