@@ -1,5 +1,5 @@
 {
-  "started_utc": "2026-09-26T14:47:08Z",
+  "started_utc": "2026-09-26T14:53:24Z",
   "emacs": "GNU Emacs 30.1",
   "source_sha256": {
     "multihost-engine.el": "d11d440d1ffcc6b511dce6646c038e2591ad55625722ef04d862a2c5d1719b56",
@@ -11,7 +11,7 @@
     "test/multihost-engine-test.el": "221f6ab4e3549bcdea134b7461a9704444794641349b530efb7a9b6c49f3d748",
     "test/multihost-integration-test.el": "c054cf84ea086d02399ccdfe56e2149f1f021106203f6e13c007395824d69e5d",
     "test/multihost-inventory-test.el": "9dceea17cd737244efa2f608296b6a6d3c17b584dd6f7eab86edf91054d066b3",
-    "test/multihost-org-integration-test.el": "5e08cd7d6512834e363d8f0708f6c9de6cfa3712cf70d9a9c904fa6f7478c5c1",
+    "test/multihost-org-integration-test.el": "ccf16a91311af4e3b65a658ccf835daf70380144c57c03197616177405ea05d6",
     "test/multihost-ui-test.el": "741e1c7fe05e0f9245db5f135460d039c2d045dfab9a216c7b439932bf638532",
     "test/multihost-worker-test.el": "4e8f49d7f546082a54936e0917232efb17d0b183215798056b05255322a10834",
     "test/ob-multihost-test.el": "d6ced50d7826b49fc4cb41a5ce29ba70c89ecccfda9e97057603b5e2dc1d9fa3",
@@ -26,7 +26,7 @@
         "check"
       ],
       "returncode": 0,
-      "elapsed_seconds": 3.085,
+      "elapsed_seconds": 3.118,
       "ert_summaries": [
         {
           "total": 77,
@@ -34,7 +34,7 @@
           "unexpected": 0
         }
       ],
-      "log_sha256": "9aeb90580dec6d0af0e3ebaf54e96998eaa663a404c6eb835c97549c30125d12"
+      "log_sha256": "5934cbd1098600eaa4349e67011f8457d903a3ba40472e6ffe8bb80854b49e64"
     },
     {
       "command": [
@@ -42,7 +42,7 @@
         "integration"
       ],
       "returncode": 0,
-      "elapsed_seconds": 36.32,
+      "elapsed_seconds": 36.292,
       "ert_summaries": [
         {
           "total": 13,
@@ -50,7 +50,7 @@
           "unexpected": 0
         }
       ],
-      "log_sha256": "17e56fb62bb2b3447757eff118a39e22080bc3deb724ea14265188c0bc2c627b"
+      "log_sha256": "cb52703d711b018ea8c11a305e722870778cf730f76ecee405fa3adfc046442c"
     }
   ],
   "status": "passed"

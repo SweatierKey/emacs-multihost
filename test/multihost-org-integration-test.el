@@ -4,6 +4,25 @@
 (require 'multihost-integration-test)
 (require 'ob-multihost)
 
+(defun multihost-org-integration--wait-results (run source)
+  "Wait for RUN finalization and its actual results insertion in SOURCE.
+Job completion, run finalization, and Org insertion are separate events;
+one fixed sleep does not establish that all three have been processed."
+  (let ((deadline (+ (float-time) 10))
+        (ready (lambda ()
+                 (and (multihost-run-ended-at run)
+                      (with-current-buffer source
+                        (save-excursion
+                          (goto-char (point-min))
+                          (search-forward "#+RESULTS:" nil t))))))
+        (polls 0))
+    (while (and (not (funcall ready)) (< (float-time) deadline))
+      (cl-incf polls)
+      (accept-process-output nil 0.03))
+    (message "Org result event observed: polls=%d state=%s inserted=%s"
+             polls (multihost-run-state run) (and (funcall ready) t))
+    (should (funcall ready))))
+
 (defmacro multihost-org-integration--with-runbook (text &rest body)
   "Visit lab runbook TEXT and run BODY with standard Org integration."
   (declare (indent 1) (debug t))
@@ -38,7 +57,7 @@
            (run (org-babel-execute-src-block)))
       (push run multihost-integration--runs)
       (multihost-integration--wait run)
-      (sleep-for 0.15)
+      (multihost-org-integration--wait-results run source)
       (let ((jobs (multihost-run-jobs run)))
         (should (equal (mapcar #'multihost-job-status jobs) '(succeeded succeeded)))
         (dolist (job jobs)
@@ -59,7 +78,7 @@
            (run (org-babel-execute-src-block))
            (jobs (multihost-run-jobs run)))
       (push run multihost-integration--runs)
-      (sleep-for 0.15)
+      (multihost-org-integration--wait-results run source)
       (should (multihost-run-finished-p run))
       (should (equal (mapcar #'multihost-job-status jobs) '(succeeded succeeded)))
       (should (equal (mapcar (lambda (job) (multihost-host-name (multihost-job-host job))) jobs)
