@@ -30,6 +30,7 @@
   (declare (indent 0) (debug t))
   `(let* ((lab (multihost-integration--lab))
           (default-directory lab)
+          (multihost-state-directory (expand-file-name "test-state" lab))
           (multihost-worker-init-file (expand-file-name "worker-init.el" lab))
           (multihost-integration--runs nil))
      (unwind-protect (progn ,@body)

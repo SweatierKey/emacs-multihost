@@ -1,5 +1,5 @@
 {
-  "started_utc": "2026-09-26T14:37:44Z",
+  "started_utc": "2026-09-26T14:47:08Z",
   "emacs": "GNU Emacs 30.1",
   "source_sha256": {
     "multihost-engine.el": "d11d440d1ffcc6b511dce6646c038e2591ad55625722ef04d862a2c5d1719b56",
@@ -8,15 +8,15 @@
     "multihost.el": "96460da41eb80abbb607c103349f153efc6830ddba29fcf3f4c519eb2ec452a4",
     "ob-multihost.el": "cba418ed253205d9f06fc3fa231bfd10bd5d51598299d841ac50676fd3d61e90",
     "test/multihost-boundary-test.el": "5ff98f93949a456bcd1f9c9acb974ed1d7766ac9a2ec6eb121c916b83358fca9",
-    "test/multihost-engine-test.el": "03ffed0638de612a143fb8ea2d7b486aecdf8579ee97c71ef8d4af94a373bcee",
-    "test/multihost-integration-test.el": "2ed86a8793fef9549a2d5a239019fd32a018e79243eb0223dde1c03ffc66be1f",
+    "test/multihost-engine-test.el": "221f6ab4e3549bcdea134b7461a9704444794641349b530efb7a9b6c49f3d748",
+    "test/multihost-integration-test.el": "c054cf84ea086d02399ccdfe56e2149f1f021106203f6e13c007395824d69e5d",
     "test/multihost-inventory-test.el": "9dceea17cd737244efa2f608296b6a6d3c17b584dd6f7eab86edf91054d066b3",
     "test/multihost-org-integration-test.el": "5e08cd7d6512834e363d8f0708f6c9de6cfa3712cf70d9a9c904fa6f7478c5c1",
     "test/multihost-ui-test.el": "741e1c7fe05e0f9245db5f135460d039c2d045dfab9a216c7b439932bf638532",
     "test/multihost-worker-test.el": "4e8f49d7f546082a54936e0917232efb17d0b183215798056b05255322a10834",
     "test/ob-multihost-test.el": "d6ced50d7826b49fc4cb41a5ce29ba70c89ecccfda9e97057603b5e2dc1d9fa3",
     "test/run-tests.el": "49c2cfa40eb3c6809bfeb8d0afd12ff3258a546032742b5330af60b63dd82923",
-    "tools/lab.py": "a8115edef7645886477f11fff2780eda43d088c3cdc8bda5384f465b996a2572",
+    "tools/lab.py": "fff33d05d5d00c47c04a0012ec06295d465e78b0c934ae8b3a7967b07dd86b76",
     "tools/test-integration.sh": "e5355ee32c2b73d7376fa58ddbe44c4a665d354481b1d34c8e9fd6f666930c24"
   },
   "checks": [
@@ -26,7 +26,7 @@
         "check"
       ],
       "returncode": 0,
-      "elapsed_seconds": 3.174,
+      "elapsed_seconds": 3.085,
       "ert_summaries": [
         {
           "total": 77,
@@ -34,7 +34,7 @@
           "unexpected": 0
         }
       ],
-      "log_sha256": "010b7332e4ff32747883f6332a912229b051c7d5aaf965c54495c6d0b3af288b"
+      "log_sha256": "9aeb90580dec6d0af0e3ebaf54e96998eaa663a404c6eb835c97549c30125d12"
     },
     {
       "command": [
@@ -42,7 +42,7 @@
         "integration"
       ],
       "returncode": 0,
-      "elapsed_seconds": 36.448,
+      "elapsed_seconds": 36.32,
       "ert_summaries": [
         {
           "total": 13,
@@ -50,7 +50,7 @@
           "unexpected": 0
         }
       ],
-      "log_sha256": "03965d65ddcf723cf143e2d8df68b872a069875ce2af6a64aa6b4487a18944af"
+      "log_sha256": "17e56fb62bb2b3447757eff118a39e22080bc3deb724ea14265188c0bc2c627b"
     }
   ],
   "status": "passed"

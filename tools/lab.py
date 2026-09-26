@@ -4,6 +4,12 @@
 The endpoints share the local kernel; they are not separate machines and do not
 simulate a CyberArk deployment.  Only generated keys are accepted.  No personal
 SSH configuration or authorized_keys file is read or modified.
+
+StrictModes is disabled only in these generated loopback server configurations:
+otherwise OpenSSH rejects private fixture keys below a shared ancestor such as
+/tmp or a CI workspace.  The fixture directory and authorization file are
+explicitly checked as user-owned 0700 and 0600, respectively.  Client host-key
+verification remains strict.  Production SSH/TRAMP configuration is unaffected.
 """
 
 import argparse
@@ -14,6 +20,7 @@ import shlex
 import shutil
 import signal
 import socket
+import stat
 import subprocess
 import sys
 import time
@@ -83,6 +90,10 @@ def start():
             subprocess.run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(target)], check=True)
         target.chmod(0o600)
     private_write(LAB / "authorized_keys", (LAB / "client_key.pub").read_text())
+    for path, mode in ((LAB, 0o700), (LAB / "authorized_keys", 0o600)):
+        attributes = path.stat()
+        if attributes.st_uid != os.getuid() or stat.S_IMODE(attributes.st_mode) != mode:
+            raise RuntimeError(f"Unsafe fixture ownership or permissions: {path}")
     public = (LAB / "host_key.pub").read_text().split()
     private_write(LAB / "known_hosts", "".join(
         f"[127.0.0.1]:{port} {public[0]} {public[1]}\n" for _, port in ROLES))
@@ -98,7 +109,8 @@ ListenAddress 127.0.0.1
 HostKey {LAB}/host_key
 PidFile {LAB}/{role}.pid
 AuthorizedKeysFile {LAB}/authorized_keys
-StrictModes yes
+# Private fixture keys can live under /tmp; ownership/modes checked by lab.py.
+StrictModes no
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 PubkeyAuthentication yes
@@ -110,7 +122,7 @@ AllowAgentForwarding no
 X11Forwarding no
 PermitTunnel no
 PermitUserEnvironment no
-LogLevel ERROR
+LogLevel VERBOSE
 Subsystem sftp internal-sftp
 """)
         subprocess.run([sshd, "-t", "-f", str(config)], check=True)
@@ -139,6 +151,10 @@ Host *
                           f"#!/bin/sh\nexec {shlex.quote(real_program)} -F {shlex.quote(str(LAB / 'ssh_config'))} \"$@\"\n",
                           0o700)
     private_write(LAB / "worker-init.el", """;;; Generated integration-only TRAMP configuration.
+(setq user-emacs-directory
+      (expand-file-name "emacs/" (file-name-directory load-file-name))
+      tramp-persistency-file-name nil)
+(make-directory user-emacs-directory t)
 (require 'tramp)
 (require 'tramp-sh)
 (setq tramp-use-connection-share nil)
@@ -160,7 +176,9 @@ Host *
                 if check.returncode == 0:
                     break
                 if time.monotonic() >= deadline:
-                    raise RuntimeError(f"SSH lab {role} failed: {check.stderr.strip()}")
+                    server_log = (LAB / f"{role}-sshd.log").read_text(errors="replace")[-4000:]
+                    raise RuntimeError(f"SSH lab {role} failed: {check.stderr.strip()}\n"
+                                       f"Server log (last 4000 characters):\n{server_log}")
                 time.sleep(0.1)
             if f"role={role}\n" not in check.stdout:
                 raise RuntimeError(f"Unexpected response from {role}")

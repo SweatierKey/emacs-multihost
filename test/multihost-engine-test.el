@@ -54,23 +54,33 @@
 
 (ert-deftest multihost-engine-concurrency-is-bounded-and-refills-slots ()
   (multihost-engine-test--isolated
-    (let ((peak 0) started finished)
+    (let ((peak 0) started)
       (cl-letf (((symbol-function 'multihost-engine--launch)
                  (lambda (run job)
                    (setf (multihost-job-status job) 'running)
                    (push (multihost-job-index job) started)
                    (setq peak (max peak (cl-count 'running (multihost-run-jobs run)
-                                                 :key #'multihost-job-status)))
-                   (run-at-time (if (zerop (multihost-job-index job)) 0.09 0.015) nil
-                                (lambda ()
-                                  (push (multihost-job-index job) finished)
-                                  (multihost-engine--finish run job 'succeeded :exit-code 0))))))
-        (multihost-engine-test--wait
-         (multihost-start (multihost-engine-test--spec)
-                          (multihost-engine-test--hosts) :concurrency 2)))
+                                                 :key #'multihost-job-status))))))
+        ;; Hold jobs behind explicit completion gates.  Comparing short timer
+        ;; delays is unreliable when a CI filesystem pauses during audit I/O.
+        (cl-labels ((await (predicate)
+                      (let ((deadline (+ (float-time) 10)))
+                        (while (and (not (funcall predicate)) (< (float-time) deadline))
+                          (accept-process-output nil 0.01))
+                        (should (funcall predicate)))))
+          (let* ((run (multihost-start (multihost-engine-test--spec)
+                                       (multihost-engine-test--hosts) :concurrency 2))
+                 (jobs (multihost-run-jobs run)))
+            (await (lambda () (= (length started) 2)))
+            (should (equal (mapcar #'multihost-job-status jobs) '(running running queued)))
+            (multihost-engine--finish run (nth 1 jobs) 'succeeded :exit-code 0)
+            (await (lambda () (eq (multihost-job-status (nth 2 jobs)) 'running)))
+            (should (equal (mapcar #'multihost-job-status jobs) '(running succeeded running)))
+            (multihost-engine--finish run (nth 2 jobs) 'succeeded :exit-code 0)
+            (multihost-engine--finish run (nth 0 jobs) 'succeeded :exit-code 0)
+            (multihost-engine-test--wait run))))
       (should (= peak 2))
-      (should (equal (nreverse started) '(0 1 2)))
-      (should (equal (nreverse finished) '(1 2 0))))))
+      (should (equal (nreverse started) '(0 1 2))))))
 
 (ert-deftest multihost-engine-fail-fast-preserves-already-running-jobs ()
   (multihost-engine-test--isolated
